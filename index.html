@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>IDESI | текстовый конструктор</title>
+    
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LQ3PFZD2ZW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LQ3PFZD2ZW');
+</script>
+    <!-- ========== КОНЕЦ БЛОКА GOOGLE ANALYTICS ========== -->
+
+    <style>
+        /* ---------- ГЛОБАЛЬНЫЕ СТИЛИ ---------- */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: #0c0c14;
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 24px 20px;
+            color: #eef2ff;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+.assistant-btn.disabled,
+.random-btn.disabled,
+.reset-cat.disabled,
+.preset-item.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+}
+
+input[type="radio"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+        /* ---------- ЗАГОЛОВОК С БЛИКОМ ---------- */
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            background: transparent;
+            color: transparent;
+            background-image: linear-gradient(135deg, #e9b35f, #c44569),
+                              linear-gradient(90deg, transparent, rgba(255,255,255,0.9), rgba(255,255,255,0.9), transparent);
+            background-repeat: no-repeat, no-repeat;
+            background-size: auto, 200% 100%;
+            background-position: 0 0, -200% 0;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: slideGloss 0.5s infinite linear;
+            border: 2px solid #e9b35f;
+            border-radius: 1rem;
+            box-shadow: 0 0 8px rgba(233,179,95,0.3);
+        }
+        @keyframes slideGloss {
+            0% { background-position: 0 0, -200% 0; }
+            14% { background-position: 0 0, 200% 0; }
+            100% { background-position: 0 0, 200% 0; }
+        }
+
+        /* ---------- АНИМАЦИЯ БЕГУЩЕЙ СТРОКИ ---------- */
+        @keyframes marqueeScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .sub {
+            color: #8a8aa6;
+            margin-bottom: 2rem;
+            border-left: 3px solid #e94560;
+            padding-left: 1rem;
+        }
+
+        /* ---------- СЕТКА КАРТОЧЕК ---------- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* ---------- КАРТОЧКА КАТЕГОРИИ ---------- */
+        .category {
+            background: #13131f;
+            border-radius: 1.5rem;
+            border: 1px solid #26263a;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #1a1a2a;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #2a2a3e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .category-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .reset-cat {
+            background: none;
+            border: 1px solid #e94560;
+            color: #e94560;
+            border-radius: 2rem;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .reset-cat:hover {
+            background: #e94560;
+            color: white;
+        }
+        /* активная кнопка сброса категории (выбран пресет) */
+        .reset-cat.active {
+            background: #e94560;
+            color: white;
+        }
+
+        /* ---------- ПРЕСЕТЫ ---------- */
+        .presets-list {
+            padding: 0.8rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .preset-item {
+            background: #1c1c28;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            border: 1px solid #2a2a38;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .preset-item:hover {
+            background: #242434;
+        }
+        .preset-item.selected {
+            background: #2a2a40;
+            border-left: 4px solid #e94560;
+            padding-left: calc(1rem - 4px);
+        }
+        input[type="radio"] {
+            margin-top: 2px;
+            accent-color: #e94560;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .preset-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .preset-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .preset-desc {
+            font-size: 0.7rem;
+            color: #9c9cbb;
+            margin-top: 4px;
+            line-height: 1.3;
+            overflow-x: hidden;
+            white-space: nowrap;
+        }
+        .marquee-track {
+            overflow-x: hidden;
+            width: 100%;
+        }
+        .marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            will-change: transform;
+        }
+        .preset-item:hover .marquee-content {
+            animation: marqueeScroll linear infinite;
+        }
+
+        /* ---------- ПОЛЯ ВВОДА ---------- */
+        .user-fields {
+            background: #0f0f18;
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #2a2a3a;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+        }
+        .field-group {
+            flex: 1;
+            min-width: 180px;
+        }
+        .field-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b0b0d0;
+            margin-bottom: 0.3rem;
+            transition: color 0.2s ease;
+        }
+        /* подсветка заполненного поля */
+        .field-group label.filled {
+            color: #e94560;
+        }
+        .field-group input {
+            width: 100%;
+            background: #1c1c28;
+            border: 1px solid #2f2f3f;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            color: white;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .field-group input:focus {
+            border-color: #e94560;
+            outline: none;
+            background: #222235;
+        }
+
+        /* ---------- БЛОК ВЫВОДА ПРОМПТА ---------- */
+        .output {
+            margin-top: 2rem;
+            background: #0a0a10;
+            border-radius: 1.5rem;
+            border: 1px solid #2a2a3a;
+            overflow: hidden;
+        }
+        .output-header {
+            background: #111118;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #222;
+        }
+        .output-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #cdd6f4;
+        }
+        .top-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .copy-btn, .reset-all, .translate-btn, .save-btn, .random-btn {
+            background: #2c2c3a;
+            border: 1px solid #8a8aa6;
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            color: #eee;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover, .reset-all:hover, .translate-btn:hover, .save-btn:hover, .random-btn:hover {
+            background: #3d3d55;
+        }
+        .copy-btn.has-presets {
+            background: #2c5a3a;
+            border: 1px solid #6aab7a;
+            color: #d0f0d0;
+        }
+        .copy-btn.has-presets:hover {
+            background: #3a7a4a;
+            border-color: #8acc9a;
+        }
+        .reset-all {
+            background: #1e1e2c;
+            border: 1px solid #e94560;
+            color: #e94560;
+        }
+        .reset-all:hover {
+            background: #e94560;
+            color: white;
+        }
+        /* активная кнопка "Сбросить всё" (есть выбранные пресеты) */
+        .reset-all.active {
+            background: #e94560;
+            color: white;
+        }
+        .translate-btn {
+            background: #252538;
+            border: 1px solid #8a8aa6;
+            color: #cdd6f4;
+        }
+        .translate-btn:hover {
+            background: #3a3a55;
+            border-color: #e94560;
+        }
+        .random-btn {
+            background: #2c2c3a;
+            border: 1px solid #8a8aa6;
+            color: #cdd6f4;
+        }
+        .random-btn:hover {
+            background: #3a3a55;
+            border-color: #e94560;
+        }
+        .second-row-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 0.8rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #222;
+        }
+        .portal-btn {
+            background: #252538;
+            border: 1px solid #8a8aa6;
+            border-radius: 2rem;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: #cdd6f4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .portal-btn:hover {
+            background: #e9b35f;
+            border-color: #e9b35f;
+            color: #0c0c14;
+        }
+        #finalPrompt {
+            margin: 0;
+            padding: 1.5rem;
+            background: #010104;
+            color: #cdd6f4;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            width: 100%;
+            border: none;
+            resize: vertical;
+            outline: none;
+            line-height: 1.4;
+            transition: color 0.2s ease;
+        }
+        /* Стиль для изменённого промпта – яркий золотистый */
+        #finalPrompt.edited {
+            color: #e9b35f;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #4a4a66;
+        }
+        footer a {
+            color: #8a8aa6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        footer a:hover {
+            color: #e9b35f;
+            text-decoration: underline;
+        }
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---------- ПЕРЕТАСКИВАЕМАЯ ИКОНКА ---------- */
+        #drag-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: auto;
+            z-index: 10000;
+            cursor: grab;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        #drag-icon:active {
+            cursor: grabbing;
+        }
+        #drag-icon svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+
+        /* Индикатор внесённых изменений – тоже золотистый */
+        .decomposition-note {
+            font-size: 0.7rem;
+            margin-left: 1rem;
+            color: #8a8aa6;
+            font-style: normal;
+            letter-spacing: normal;
+            text-transform: none;
+            align-self: center;
+        }
+        .manual-indicator {
+            font-size: 0.7rem;
+            margin-left: 1rem;
+            color: #e9b35f;
+        }
+
+        /* Все кнопки заглавными буквами */
+        .top-buttons button,
+        .second-row-buttons button,
+        .reset-cat {
+            text-transform: uppercase;
+        }
+
+        /* ---------- СТИЛИ ДЛЯ БЛОКА АССИСТЕНТ ---------- */
+        .assistant-panel {
+            margin-top: 2rem;
+            background: #0a0a10;
+            border-radius: 1.5rem;
+            border: 1px solid #2a2a3a;
+            overflow: hidden;
+        }
+        .assistant-header {
+            background: #111118;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        .assistant-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: flex-start;
+        }
+        .assistant-btn {
+            background: #252538;
+            border: 1px solid #8a8aa6;
+            border-radius: 2rem;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: #cdd6f4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-family: inherit;
+        }
+        .assistant-btn:hover {
+            background: #3a3a55;
+            border-color: #e94560;
+        }
+        .assistant-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+            color: white;
+        }
+        .assistant-content {
+            transition: all 0.3s ease-in-out;
+            background: #010104;
+            border-top: none;
+        }
+        .assistant-content iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            display: block;
+            background: #010104;
+        }
+        .generator-container {
+            padding: 1.5rem;
+            color: #cdd6f4;
+        }
+        .generator-container textarea {
+            width: 100%;
+            background: #1c1c28;
+            border: 1px solid #2f2f3f;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            color: white;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+        .generator-container button {
+            background: #2c5a3a;
+            border: 1px solid #6aab7a;
+            border-radius: 2rem;
+            padding: 0.4rem 1.2rem;
+            color: white;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .generator-container button:hover {
+            background: #3a7a4a;
+        }
+        .generator-result {
+            margin-top: 1rem;
+            background: #13131f;
+            border-radius: 1rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.7rem;
+            max-height: 300px;
+            overflow: auto;
+        }
+        @media (max-width: 600px) {
+            .assistant-content iframe {
+                height: 400px;
+            }
+            .generator-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+<div class="container">
+<h1 id="mainTitle">
+    IDESI · ПРОМПТ-МОНСТР
+</h1>
+    <div class="sub" id="subTitle">текстовый конструктор</div>
+
+    <!-- ПОЛЯ ВВОДА ПЕРСОНАЖА -->
+    <div class="user-fields">
+        <div class="field-group"><label id="characterLabel">ПЕРСОНАЖ (архетип)</label><input type="text" id="characterInput" placeholder=" архетип: маг/ воин/ изобретатель " value=""></div>
+        <div class="field-group"><label id="genderLabel">ПОЛ</label><input type="text" id="genderInput" placeholder=" мужской / женский / небинарный " value=""></div>
+        <div class="field-group"><label id="raceLabel">РАСА</label><input type="text" id="raceInput" placeholder=" азиат/ эльф/ орк/ дроу/ робот" value=""></div>
+        <div class="field-group"><label id="sceneLabel">Сцена / ОКРУЖЕНИЕ</label><input type="text" id="sceneInput" placeholder=" пишите всё на английском" value=""></div>
+    </div>
+
+    <!-- КОНТЕЙНЕР ДЛЯ КАТЕГОРИЙ С ПРЕСЕТАМИ -->
+    <div id="categoriesContainer" class="grid"></div>
+
+    <!-- БЛОК ВЫВОДА ПРОМПТА -->
+<div class="output">
+    <div class="output-header">
+        <h3>ФИНАЛЬНЫЙ ПРОМПТ <span id="editingHint" style="font-weight: normal;">| окно для редактирования</span><span id="manualEditBadge" class="manual-indicator"></span></h3>
+        <div class="top-buttons">
+            <button class="translate-btn" id="translateBtn">English</button>
+            <button class="save-btn" id="saveBtn">СОХРАНИТЬ</button>
+            <button class="random-btn" id="randomBtn">RANDOM</button>
+            <button class="reset-all" id="resetAllBtn">СБРОСИТЬ ВСЁ</button>
+            <button class="copy-btn" id="copyFinalBtn">КОПИРОВАТЬ</button>
+        </div>
+    </div>
+    <textarea id="finalPrompt" rows="18" placeholder="// Заполните поля и выберите пресеты..."></textarea>
+    <div class="second-row-buttons">
+        <button class="portal-btn" onclick="window.open('https://jayflow.ai', '_blank')">JayFlow.ai</button>
+        <button class="portal-btn" onclick="window.open('https://leonardo.ai', '_blank')">Leonardo.ai</button>
+        <button class="portal-btn" onclick="window.open('https://www.seaart.ai', '_blank')">SeaArt.ai</button>
+        <button class="portal-btn" onclick="window.open('https://vk.com/saiapin_andrei?w=wall808117921_133', '_blank')">VK · пост о конструкторе</button>
+<button class="portal-btn" id="hlsRadioBtn">▶</button>
+    </div>
+</div>
+
+<!-- НАЧАЛО БЛОКА "АССИСТЕНТ" -->
+<div class="assistant-panel">
+    <div class="assistant-header">
+        <div class="assistant-buttons">
+            <button class="assistant-btn" data-target="generator">ДЕКОМПОЗИЦИЯ</button>
+            <span id="decompositionNote" class="decomposition-note"
+                  data-ru="декомпозиция любого текстового описания на категории для трёхпланового построения пространства"
+                  data-en="decomposition of any text description into categories for three-plane space construction">
+            </span>
+        </div>
+    </div>
+    <div class="assistant-content" id="assistantContent" style="display: none;"></div>
+</div>
+<!-- КОНЕЦ БЛОКА АССИСТЕНТ -->
+
+    <footer>
+        made in <a href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer">deepseek</a><br>
+        2026
+    </footer>
+</div>
+
+<!-- ПЕРЕТАСКИВАЕМАЯ ИКОНКА -->
+<div id="drag-icon">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8000 6500" width="100%" height="100%" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd">
+        <defs><style type="text/css"><![CDATA[ .fil1 { fill:#1A1A1A } .fil3 { fill:#E1F2FF } .fil0 { fill:#E94560 } .fil2 { fill:#E8B05F; fill-rule:nonzero } ]]></style></defs>
+        <g id="Слой_x0020_1"><path class="fil0" d="M4957.03 3718.27c104.98,11.18 213.8,26.22 313.73,51.9 89.28,22.95 216.81,66.17 216.81,178.99 0,103.73 -105.76,151.52 -189.88,177.39 -104.57,32.15 -223.45,49.04 -331.96,61.98 -316.26,37.72 -647.35,47.16 -965.74,47.13 -204.25,-0.02 -409.06,-4.91 -612.98,-16.92 -137.24,-8.08 -277.47,-18.87 -414.69,-37.9l-0.04 288.32c-0.02,126.94 -102.98,229.92 -229.92,229.92 -126.94,0 -229.93,-102.99 -229.93,-229.93l0 -519.99c0,-112.82 127.53,-156.04 216.81,-178.99 99.92,-25.68 208.74,-40.72 313.72,-51.9l0 -10.38c0,-20.62 -6.67,-35.81 -21.85,-49.77 -15.18,-13.95 -30.88,-19.3 -51.43,-17.56 -9.09,0.77 -18.01,3.07 -26.35,6.77 -77.18,34.28 -166.94,9.49 -215.56,-59.57 -21.8,-30.95 -51.4,-55.67 -85.78,-71.57 -63.39,-29.33 -137.84,-25.98 -198.29,8.85 -77.82,44.85 -177.62,23.61 -230.44,-49.03 -53.47,-73.55 -140.45,-121.55 -226.68,-145.51 -109.37,-30.4 -236.54,-26.93 -343.31,12.76 -71.15,26.44 -149.81,5.1 -197.82,-53.7 -47.75,-58.46 -53.01,-140.39 -13.14,-204.48 294.21,-472.95 763.61,-811.26 1305.49,-940.72 64.83,-15.49 129.2,-4.26 184.96,32.24 55.78,36.52 91.8,91.04 103.53,156.66 4.55,25.46 10.13,50.69 16.7,75.63l0.01 -341.96c0,-118.53 75.93,-220.77 189.55,-254.69 113.23,-33.81 233.19,9.76 298.25,108.44l188.27 285.5 561.92 -0.03 188.21 -285.47c65.06,-98.68 185.02,-142.25 298.25,-108.44 113.63,33.92 189.55,136.16 189.55,254.69l0 341.97c6.58,-24.94 12.16,-50.17 16.71,-75.64 11.73,-65.62 47.75,-120.14 103.52,-156.65 55.77,-36.51 120.14,-47.74 184.97,-32.25 541.88,129.46 1011.28,467.77 1305.49,940.72 39.87,64.09 34.61,146.02 -13.14,204.48 -48.01,58.8 -126.67,80.14 -197.82,53.7 -106.77,-39.69 -233.94,-43.16 -343.31,-12.76 -86.23,23.96 -173.21,71.96 -226.68,145.51 -52.82,72.65 -152.63,93.88 -230.45,49.03 -60.45,-34.83 -134.9,-38.18 -198.28,-8.85 -34.38,15.9 -63.98,40.62 -85.78,71.57 -48.62,69.06 -138.38,93.85 -215.56,59.57 -8.34,-3.7 -17.26,-6 -26.35,-6.77 -20.55,-1.74 -36.25,3.61 -51.43,17.56 -15.18,13.95 -21.86,29.14 -21.86,49.76l0 10.39z"/><g><path class="fil1" d="M5387.57 3949.18c0,124.81 -693.97,186.77 -1387.57,186.5 -417.29,0.17 -834.66,-22.2 -1101.01,-67.23 -6.87,-1.15 -13.24,0.59 -18.56,5.09 -5.32,4.49 -8.1,10.48 -8.1,17.45l0 378.18 -0.05 0c0,71.75 -58.17,129.93 -129.92,129.93 -71.74,0 -129.93,-58.18 -129.93,-129.93l0 -519.99c0,-63.39 207.94,-109.53 509.85,-138.35 11.77,-1.12 20.68,-10.92 20.68,-22.74l0 -80.18c0.01,-48.63 -18.38,-90.49 -54.19,-123.4 -35.81,-32.9 -79.07,-47.68 -127.53,-43.57 -20.35,1.72 -40.11,6.85 -58.5,15.02 -33.57,14.91 -72.06,4.28 -93.21,-25.75 -31.67,-44.98 -74.83,-81.29 -125.55,-104.76 -94.48,-43.71 -202.68,-37.47 -290.21,12.97 -33.89,19.53 -76.62,10.44 -99.63,-21.2 -61.12,-84.07 -160.5,-149.62 -280.78,-183.05 -127.92,-35.55 -276.82,-32.24 -404.93,15.37 -31.09,11.56 -64.55,2.48 -85.53,-23.21 -20.97,-25.68 -23.2,-60.26 -5.68,-88.41 279.69,-449.62 726.4,-772.67 1243.82,-896.28 38.06,-9.1 74.2,-2.79 106.95,18.65 32.75,21.44 52.98,52.05 59.86,90.58 26.99,151 86.41,293.88 173.53,418.95 5.8,8.33 15.91,11.78 25.6,8.74 9.68,-3.04 16,-11.65 16,-21.8l0.02 -689.81c0,-74.34 46.9,-137.57 118.16,-158.87 71.22,-21.24 145.19,5.57 186.15,67.66l188.92 286.55c18.6,28.18 47.72,43.91 81.45,43.91l282.32 0 282.32 0c33.73,0 62.84,-15.73 81.45,-43.91l188.92 -286.55c40.96,-62.09 114.93,-88.9 186.15,-67.66 71.26,21.3 118.16,84.53 118.16,158.87l0.01 689.81c0,10.15 6.33,18.76 16.01,21.8 9.68,3.04 19.8,-0.41 25.6,-8.74 87.11,-125.07 146.54,-267.95 173.53,-418.95 6.88,-38.53 27.11,-69.14 59.86,-90.58 32.74,-21.44 68.88,-27.75 106.95,-18.65 517.42,123.61 964.13,446.66 1243.82,896.28 17.52,28.15 15.29,62.73 -5.68,88.41 -20.98,25.69 -54.44,34.77 -85.53,23.21 -128.11,-47.61 -277.01,-50.92 -404.93,-15.37 -120.28,33.43 -219.66,98.98 -280.78,183.05 -23.01,31.64 -65.74,40.73 -99.64,21.2 -87.52,-50.44 -195.72,-56.68 -290.2,-12.97 -50.72,23.47 -93.88,59.78 -125.55,104.76 -21.15,30.03 -59.64,40.66 -93.21,25.75 -18.39,-8.17 -38.15,-13.3 -58.5,-15.02 -48.46,-4.11 -91.72,10.67 -127.53,43.57 -35.81,32.91 -54.2,74.77 -54.2,123.4l0.01 80.18c0,11.82 8.91,21.62 20.68,22.74 301.91,28.82 509.85,74.96 509.85,138.35zm-1651.86 -203.84c-107.29,0 -195.79,80.5 -208.44,184.38 -0.82,6.72 1.09,12.82 5.6,17.91 4.48,5.06 10.32,7.69 17.1,7.69l371.48 0c6.78,0 12.63,-2.63 17.11,-7.69 4.5,-5.09 6.41,-11.19 5.6,-17.91 -12.65,-103.88 -101.18,-184.38 -208.45,-184.38zm528.57 0c107.29,0 195.8,80.5 208.44,184.38 0.82,6.72 -1.09,12.82 -5.59,17.91 -4.48,5.06 -10.32,7.69 -17.11,7.69l-371.47 0c-6.79,0 -12.63,-2.63 -17.11,-7.69 -4.5,-5.09 -6.42,-11.19 -5.6,-17.91 12.65,-103.88 101.17,-184.38 208.44,-184.38z"/><g><path class="fil2" d="M3699.32 3004.98c23.48,23.07 55.69,37.34 90.87,37.34 35.23,0 67.57,-14.54 90.98,-38.04 22.97,-23.21 37.47,-55.18 37.47,-90.92 0,-35.37 -14.64,-67.35 -37.9,-90.36 -23.35,-23.21 -55.83,-37.66 -90.55,-37.66 -35.18,0 -67.76,14.32 -91.3,37.86 -23.07,23.09 -37.66,55.16 -37.66,91.09 0,35.43 14.65,67.44 38.09,90.69z"/><path class="fil2" d="M4124.82 3004.98c23.48,23.07 55.69,37.34 90.86,37.34 35.23,0 67.58,-14.54 90.98,-38.04 22.97,-23.21 37.47,-55.18 37.47,-90.92 0,-35.37 -14.63,-67.21 -37.9,-90.36 -23.48,-23.21 -55.77,-37.66 -90.55,-37.66 -35.31,0 -67.75,14.32 -91.29,37.86 -23.07,23.09 -37.69,55.16 -37.69,91.09 0,35.43 14.68,67.44 38.12,90.69z"/></g></g><path class="fil3" d="M3735.71 3745.34c-107.29,0 -195.79,80.51 -208.44,184.38 -0.82,6.72 1.1,12.81 5.6,17.91 4.48,5.07 10.32,7.7 17.1,7.7l371.47 0c6.8,0 12.63,-2.63 17.12,-7.7 4.5,-5.1 6.4,-11.19 5.59,-17.91 -12.64,-103.87 -101.17,-184.38 -208.44,-184.38zm528.58 0c107.29,0 195.79,80.51 208.44,184.38 0.82,6.72 -1.1,12.81 -5.6,17.91 -4.48,5.07 -10.32,7.7 -17.1,7.7l-371.49 0c-6.78,0 -12.61,-2.63 -17.1,-7.7 -4.5,-5.1 -6.42,-11.19 -5.59,-17.91 12.64,-103.87 101.17,-184.38 208.44,-184.38z"/></g>
+    </svg>
+</div>
+
+<script>
+    // ======================= 1. ДАННЫЕ КАТЕГОРИЙ (ПРЕСЕТЫ) =======================
+    const categoriesData = [
+    {
+        nameRu: "[1] СТИЛЬ",
+        nameEn: "[1] STYLE",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|1] Гуашь / Матовая иллюстрация", labelEn: "[1|1] Gouache / Matte illustration", descRu: "Плоские цветовые пятна с лёгким зерном, мягкие переходы, отсутствие бликов. Roughness 0.9–1.0, Specular 0.1, Subsurface 0.05. Матовая бумажная фактура.", descEn: "Flat color spots with slight grain, soft transitions, no sharp highlights. Roughness 0.9–1.0, Specular 0.1, Subsurface 0.05. Matte, paper-like." },
+            { labelRu: "[2|1] Деревянная марионетка", labelEn: "[2|1] Wooden puppet", descRu: "Сегментированные сочленения, фактура тонированного дерева. Roughness 0.6 с маской потёртостей, Specular 0.4, Anisotropic 0.2. Древесные волокна и царапины.", descEn: "Segmented joints, stained wood texture. Roughness 0.6 with wear mask, Specular 0.4, Anisotropic 0.2. Wood grain and scratches." },
+            { labelRu: "[3|1] Воксельный / Кубический конструктор", labelEn: "[3|1] Voxel / Cubic constructor", descRu: "Объекты из одинаковых кубов, строгая сетка, нет сглаженных поверхностей. Roughness 0.5–0.7, Specular 0.2. AO по граням.", descEn: "Objects made of identical cubes, strict grid, no smooth surfaces. Roughness 0.5–0.7, Specular 0.2. Edge ambient occlusion." },
+            { labelRu: "[4|1] Угольный набросок / Концепт-арт", labelEn: "[4|1] Charcoal sketch / Concept art", descRu: "Хаотичная штриховка, размытые линии, эффект растушёвки. Roughness 0.95, Specular 0.0. Normal map с шумом штрихов, Emission 0.2, Subsurface 0.1. Ворсистая поверхность.", descEn: "Chaotic hatching, blurred lines, smudge effect. Roughness 0.95, Specular 0.0. Hatching noise normal map, Emission 0.2, Subsurface 0.1. Fuzzy surface." },
+            { labelRu: "[5|1] Голографическая фольга / Переливчатый пластик", labelEn: "[5|1] Holographic foil / Iridescent plastic", descRu: "Радужные переливы от угла обзора, гладкие формы. Metallic 1.0, Roughness 0.2–0.4, Anisotropic 0.8, Clearcoat 1.0. Радужный градиент в отражениях.", descEn: "Rainbow iridescence with viewing angle, smooth forms. Metallic 1.0, Roughness 0.2–0.4, Anisotropic 0.8, Clearcoat 1.0. Rainbow gradient in reflections." },
+            { labelRu: "[6|1] Глитч / Датамос", labelEn: "[6|1] Glitch / Datamosh", descRu: "Смещённые пиксельные блоки, разрыв цветовых каналов, артефакты. Roughness 0.4, Metallic 0.0, Emission 0.8. Маска случайных блоков, normal map с горизонтальными разрывами.", descEn: "Displaced pixel blocks, color channel shifts, compression artifacts. Roughness 0.4, Metallic 0.0, Emission 0.8. Random block mask, normal map with horizontal tears." },
+            { labelRu: "[7|1] Бумажная скульптура / Киригами", labelEn: "[7|1] Paper sculpture / Kirigami", descRu: "Тонкие листы бумаги, согнутые под углами, видимые торцы. Roughness 0.85, Specular 0.1, Subsurface 0.15. Чёткие 1-пиксельные линии на гранях, текстура крафт-бумаги.", descEn: "Thin folded paper sheets, visible edges. Roughness 0.85, Specular 0.1, Subsurface 0.15. Sharp 1-pixel edge lines, kraft paper texture." },
+            { labelRu: "[8|1] Лава-лампа / Жидкая термопластика", labelEn: "[8|1] Lava lamp / Liquid thermoplastic", descRu: "Тягучие каплевидные формы, медленная деформация, пузырьки. SSS 0.6, Roughness 0.3, Metallic 0.0. Стеклянная оболочка IOR 1.5, градиентная текстура с частицами.", descEn: "Viscous droplet shapes, slow deformation, bubbles. SSS 0.6, Roughness 0.3, Metallic 0.0. Glass shell IOR 1.5, gradient texture with floating particles." },
+            { labelRu: "[9|1] Гравюра на картоне / Штриховая резьба", labelEn: "[9|1] Cardboard engraving / Hatching carving", descRu: "Белые линии на чёрном фоне, высокая контрастность, параллельная штриховка. Specular 0.0, Roughness 1.0. Ramp-шейдер на 2 тона, emission-штрихи через нормали.", descEn: "White lines on black background, high contrast, parallel hatching. Specular 0.0, Roughness 1.0. 2-tone ramp shader, emission strokes via normals." },
+            { labelRu: "[10|1] Кристалл / Огранённый самоцвет", labelEn: "[10|1] Crystal / Faceted gemstone", descRu: "Резкие многогранные формы, внутренние отражения и преломления. Metallic 0.0, Specular 0.9, Roughness 0.1, Transparency 0.7, IOR 2.4. Дисперсия (радужный блеск на гранях).", descEn: "Sharp faceted forms, internal reflections and refraction. Metallic 0.0, Specular 0.9, Roughness 0.1, Transparency 0.7, IOR 2.4. Dispersion (rainbow edge sparkle)." },
+            { labelRu: "[11|1] Эмалевый значок / Твёрдая эмаль", labelEn: "[11|1] Enamel pin / Hard enamel", descRu: "Плоские заливки цветов, разделённые металлическим контуром. Clearcoat 0.9, Roughness 0.2, Metallic 0.7 (только контур). Нормали с выдавленным контуром 0.3 мм.", descEn: "Flat color fills separated by metal outline. Clearcoat 0.9, Roughness 0.2, Metallic 0.7 (outline only). Normals with embossed 0.3 mm contour." },
+            { labelRu: "[12|1] Пыльная ретро-фотография / Винтаж", labelEn: "[12|1] Dusty retro photo / Vintage", descRu: "Блёклые тона, зернистость, виньетирование, царапины. Roughness 0.8, Specular 0.05. Процедурная пыль, цветокоррекция в сепию/циан, размытие краёв.", descEn: "Faded tones, grain, vignetting, scratches. Roughness 0.8, Specular 0.05. Procedural dust, sepia/cyan color grading, edge blur." },
+            { labelRu: "[13|1] Надувная игрушка / Бамбл-гум", labelEn: "[13|1] Inflatable toy / Bumble-gum", descRu: "Полые надувные формы, видимые швы и клапаны, насыщенные пастельные тона. Roughness 0.3, Specular 0.5, SSS 0.2. Чёткие линии шва с тенью.", descEn: "Hollow inflatable forms, visible seams and valves, saturated pastels. Roughness 0.3, Specular 0.5, SSS 0.2. Sharp seam lines with shadow." },
+            { labelRu: "[14|1] Нуар / Чёрно-белое кино", labelEn: "[14|1] Noir / Black-and-white cinema", descRu: "Резкие тени, высокий контраст, дымка. Альбедо — градации серого. Roughness 0.6 (плёночная зернистость), Specular 0.4. Монохромные отражения, объёмный свет «лучей прожектора».", descEn: "Sharp shadows, high contrast, haze. Albedo in grayscale. Roughness 0.6 (film grain), Specular 0.4. Monochrome reflections, volumetric spotlight rays." },
+            { labelRu: "[15|1] Школьная доска / Меловой рисунок", labelEn: "[15|1] Chalkboard / Chalk drawing", descRu: "Матовый тёмно-зелёный/чёрный фон, меловые штрихи с размытием. Roughness 0.95, Specular 0.0. Эмиссия у линий, текстура меловой крупицы и разводов от ластика.", descEn: "Matte dark green/black background, chalk strokes with blur. Roughness 0.95, Specular 0.0. Emission on lines, chalk grain and eraser smudge texture." },
+            { labelRu: "[16|1] Таксидермия / Музей естествознания", labelEn: "[16|1] Taxidermy / Natural history museum", descRu: "Матовые поверхности старых чучел, стеклянные глаза, выцветший мех/перья. Roughness 0.7 (мех: anisotropic 0.4). Глаза: Metallic 0.9, Roughness 0.1. SSS для кожи и воска, пыль.", descEn: "Matte old taxidermy, glass eyes, faded fur/feathers. Roughness 0.7 (fur: anisotropic 0.4). Eyes: Metallic 0.9, Roughness 0.1. SSS for skin and wax, dust." },
+            { labelRu: "[17|1] Витраж / Соборный", labelEn: "[17|1] Stained glass / Cathedral", descRu: "Сегментированные поверхности с тёмным свинцовым контуром, светящиеся фрагменты. Transmission 0.8, Roughness 0.4. Каждый фрагмент — независимая эмиссия. Нормали с выступающими границами.", descEn: "Segmented surfaces with dark lead outline, glowing fragments. Transmission 0.8, Roughness 0.4. Each fragment has independent emission. Normals with raised borders." },
+            { labelRu: "[18|1] Винил / Проигрыватель пластинок", labelEn: "[18|1] Vinyl / Record player", descRu: "Глянцевые чёрные диски, микроскопические дорожки, круговые блики. Roughness 0.15, Metallic 0.8, Anisotropic 0.9 (по кругу). Нормали — концентрические бороздки.", descEn: "Glossy black records, microscopic grooves, circular highlights. Roughness 0.15, Metallic 0.8, Anisotropic 0.9 (circular). Normals with concentric grooves." },
+            { labelRu: "[19|1] Гипс / Античная статуя", labelEn: "[19|1] Plaster / Ancient statue", descRu: "Матовый белый/светло-серый, мелкозернистая фактура, мягкие тени. Roughness 0.85, Specular 0.05, Subsurface 0.1. Лёгкая шершавость (noise 0.02). Нейтральный цвет с тёплым/холодным оттенком.", descEn: "Matte white/light gray, fine grain, soft shadows. Roughness 0.85, Specular 0.05, Subsurface 0.1. Slight roughness noise 0.02. Neutral color with warm/cool tint." },
+            { labelRu: "[20|1] Конфета / Прозрачный мармелад", labelEn: "[20|1] Candy / Transparent gummy", descRu: "Жевательная текстура, яркие полупрозрачные цвета, пузырьки воздуха. SSS 0.7, Roughness 0.2, Specular 0.6, Transparency 0.5, IOR 1.45. Clearcoat 0.8 (сахарная корка).", descEn: "Chewy texture, bright translucent colors, air bubbles. SSS 0.7, Roughness 0.2, Specular 0.6, Transparency 0.5, IOR 1.45. Clearcoat 0.8 (sugar crust)." },
+            { labelRu: "[21|1] Пластилиновый / Матовый винил", labelEn: "[21|1] Plasticine / Matte vinyl", descRu: "Упрощённые пухлые формы, отсутствие острых углов. Roughness 0.8–1.0, Specular 0.0. Мягкое подповерхностное рассеивание (SSS) для эффекта софт-тач пластика.", descEn: "Simplified chubby forms, no sharp corners. Roughness 0.8–1.0, Specular 0.0. Soft subsurface scattering for soft-touch plastic feel." },
+            { labelRu: "[22|1] Корпоративный минимализм", labelEn: "[22|1] Corporate minimalism", descRu: "Экстремальный гротеск, длинные конечности, крошечные головы. Плоские заливки чистыми пастельными или неоновыми цветами. Без микрорельефа, минимальные градиенты теней.", descEn: "Extreme grotesque, long limbs, tiny heads. Flat fills with clean pastel or neon colors. No micro-detail, minimal shadow gradients." },
+            { labelRu: "[23|1] Коллекционная виниловая игрушка", labelEn: "[23|1] Collectible vinyl toy", descRu: "Чёткий силуэт (Funko Pop, KAWS), голова до 50% объёма. Полуматовый (Roughness 0.4–0.6) с размытыми бликами. Идеально гладкая текстура заводского литья.", descEn: "Clear silhouette (Funko Pop, KAWS), head up to 50% of volume. Semi-matte (Roughness 0.4–0.6) with soft highlights. Perfectly smooth factory-cast texture." },
+            { labelRu: "[24|1] Паксаровский стиль (Pixar / Disney)", labelEn: "[24|1] Pixar style (Pixar / Disney)", descRu: "Огромные выразительные глаза, детальная мимика, проработанные волосы/шерсть. Сложные PBR-материалы: глубокий SSS для кожи, текстура волокон тканей.", descEn: "Huge expressive eyes, detailed facial expressions, intricate hair/fur. Complex PBR materials: deep SSS for skin, fabric fiber texture." },
+            { labelRu: "[25|1] Низкополигональный стиль", labelEn: "[25|1] Low-poly style", descRu: "Геометрия без сглаживания, чётко видимые полигоны, кубы или треугольники. Полностью матовые шейдеры. Часто запеченный свет в текстуры.", descEn: "Unsmooth geometry, clearly visible polygons, cubes or triangles. Fully matte shaders. Often baked lighting into textures." },
+            { labelRu: "[26|1] Аниме и комикс стиль (Cel-Shading)", labelEn: "[26|1] Anime & comic style (Cel-Shading)", descRu: "3D-модель выглядит как плоский 2D-рисунок. Ступенчатый градиент тени с жёсткой границей. Часто добавляется чёрная обводка контуров.", descEn: "3D model looks like flat 2D drawing. Stepped shadow gradient with hard edge. Often outlined with black contour lines." },
+            { labelRu: "[27|1] Ручная раскраска", labelEn: "[27|1] Hand-painted", descRu: "Весь объём, свет и тени нарисованы вручную на текстуре. Шейдер Unlit (без освещения) или Emission. Объём только за счёт нарисованных теней.", descEn: "All volume, light and shadow hand-painted on texture. Unlit shader (no lighting) or Emission. Volume achieved only through painted shadows." },
+            { labelRu: "[28|1] Кинематографичный фотореализм", labelEn: "[28|1] Cinematic photorealism", descRu: "Абсолютное копирование физического мира, поры кожи, морщины. Сложные PBR-материалы, текстуры 8K+, анизотропия волос, микро-царапины и пыль.", descEn: "Absolute copy of physical world, skin pores, wrinkles. Complex PBR materials, 8K+ textures, hair anisotropy, micro-scratches and dust." },
+            { labelRu: "[29|1] Архитектурный и предметный фотореализм", labelEn: "[29|1] Architectural & product photorealism", descRu: "Идеальная геометрия, точность размеров и физика материалов. Акцент на честные оптические свойства: IOR стекла, Clearcoat лака, физически корректное поглощение тканей.", descEn: "Perfect geometry, dimensional accuracy, physical material properties. Focus on honest optics: glass IOR, clearcoat lacquer, physically correct fabric absorption." },
+            { labelRu: "[30|1] Киберпанк / Футуристичный реализм", labelEn: "[30|1] Cyberpunk / Futuristic realism", descRu: "Перегрузка деталями: провода, импланты, неон. Контраст грубых матовых тканей и идеального глянца карбона/хрома. Emission на неоновых панелях.", descEn: "Overloaded with details: wires, implants, neon. Contrast between rough matte fabrics and perfect gloss of carbon/chrome. Emission on neon panels." },
+            { labelRu: "[31|1] Ностальгический low-poly (PS1)", labelEn: "[31|1] Nostalgic low-poly (PS1)", descRu: "Экстремально низкое количество полигонов. Текстуры ультра-низкого разрешения (256x256) с пикселизацией. Фильтрация текстур — Nearest Neighbor. Освещение запечено в Vertex Color.", descEn: "Extremely low polygon count. Ultra-low-res textures (256x256) with pixelation. Texture filtering: Nearest Neighbor. Lighting baked into vertex colors." },
+            { labelRu: "[32|1] Имитация кукольной анимации (Stop-Motion)", labelEn: "[32|1] Stop-motion imitation", descRu: "Неровности геометрии, отпечатки пальцев, текстура пластилина/войлока. Полуматовые, шероховатые (Roughness 0.5–0.7). Процедурный шум в нормалях. Анимация с 12 fps.", descEn: "Geometry unevenness, fingerprints, plasticine/felt texture. Semi-matte, rough (Roughness 0.5–0.7). Procedural noise in normals. Animation at 12 fps." },
+            { labelRu: "[33|1] Стиль «Человек-паук: Паутина вселенных»", labelEn: "[33|1] Spider-Verse style", descRu: "Сочетание 3D-геометрии с элементами плоского 2D-комикса. Штриховка, точки полутонов (halftone), чёрные линии контуров. Хроматическая аберрация вместо Depth of Field.", descEn: "Mix of 3D geometry with flat 2D comic elements. Hatching, halftone dots, black contour lines. Chromatic aberration instead of Depth of Field." },
+            { labelRu: "[34|1] Высокотехнологичный глянец / Премиальная распаковка", labelEn: "[34|1] High-tech gloss / Premium unboxing", descRu: "Идеально гладкие поверхности, хромированные акценты, глубокая чернота. Metallic 0.95–1.0, Roughness 0.05–0.1, Clearcoat 1.0, IOR 2.0, Anisotropic 0.7. HDRI с ч/б студийным светом.", descEn: "Perfectly smooth surfaces, chrome accents, deep black. Metallic 0.95–1.0, Roughness 0.05–0.1, Clearcoat 1.0, IOR 2.0, Anisotropic 0.7. HDRI with black/white studio light." },
+            { labelRu: "[35|1] Мягкая продуктовая студия / Минималистичная косметика", labelEn: "[35|1] Soft product studio / Minimalist cosmetics", descRu: "Сглаженные «пирожные» формы, рассеянный молочный свет, пастельные тона. Roughness 0.3–0.4, SSS 0.25, Specular 0.3. Мелкий пудровый шум (noise 0.01).", descEn: "Smooth cupcake-like forms, diffused milky light, pastel tones. Roughness 0.3–0.4, SSS 0.25, Specular 0.3. Fine powdery noise (0.01)." },
+            { labelRu: "[36|1] Ювелирный блеск / Алмазная россыпь", labelEn: "[36|1] Jewelry sparkle / Diamond scatter", descRu: "Экстремальный блеск, звёздчатые блики. Metallic 1.0, Roughness 0.02, Specular 1.0, Transmission 0.3 (камни), Dispersion 0.2, Anisotropic 0.9. IOR 2.4 для алмазов. Normal map с мелкой гранью.", descEn: "Extreme sparkle, star-like highlights. Metallic 1.0, Roughness 0.02, Specular 1.0, Transmission 0.3 (gems), Dispersion 0.2, Anisotropic 0.9. IOR 2.4 for diamonds. Normal map with fine facets." },
+            { labelRu: "[37|1] Фуд-порн / Гиперреалистичная кулинария", labelEn: "[37|1] Food porn / Hyperrealistic cuisine", descRu: "Сочные текстуры, глянцевые глазури, пар, капли воды. Roughness: хлеб 0.6, глазурь 0.15, мясо 0.4 с SSS 0.3. Specular 0.7. Процедурный бамп (капли, поры), Clearcoat для соуса.", descEn: "Juicy textures, glossy glazes, steam, water droplets. Roughness: bread 0.6, glaze 0.15, meat 0.4 with SSS 0.3. Specular 0.7. Procedural bump (droplets, pores), Clearcoat for sauce." },
+            { labelRu: "[38|1] Голографический интерфейс / Футуристическая реклама", labelEn: "[38|1] Holographic interface / Futuristic ad", descRu: "Полупрозрачные синие/циановые панели, линии сетки. Metallic 0.0, Roughness 0.2, Specular 0.8, Transmission 0.6, Emission 0.5 (голубой/пурпурный). Наложены шестиугольные паттерны, IOR 1.0.", descEn: "Semi-transparent blue/cyan panels, grid lines. Metallic 0.0, Roughness 0.2, Specular 0.8, Transmission 0.6, Emission 0.5 (blue/purple). Hexagon patterns overlaid, IOR 1.0." },
+            { labelRu: "[39|1] Жидкий металл", labelEn: "[39|1] Liquid metal", descRu: "Плавные текучие формы, отсутствие острых граней, хаотичные отражения. Metallic 0.95–1.0, Roughness 0.1–0.3 с шумом, Anisotropic 0.6. HDRI с контрастным студийным светом. Бамп в виде плавных волн.", descEn: "Smooth fluid forms, no sharp edges, chaotic reflections. Metallic 0.95–1.0, Roughness 0.1–0.3 with noise, Anisotropic 0.6. HDRI with contrast studio light. Bump as smooth waves." },
+            { labelRu: "[40|1] Мятный фреш", labelEn: "[40|1] Mint fresh", descRu: "Сочные пастельные мятные и ментоловые оттенки, небольшой глянец как глазурь. Roughness 0.25–0.35, Specular 0.5, Subsurface 0.1, Clearcoat 0.7. Альбедо — бирюзовый, мятно-зелёный, белый.", descEn: "Juicy pastel mint and menthol shades, slight glaze-like gloss. Roughness 0.25–0.35, Specular 0.5, Subsurface 0.1, Clearcoat 0.7. Albedo: turquoise, mint-green, white." },
+            { labelRu: "[41|1] Сухой мел", labelEn: "[41|1] Dry chalk", descRu: "Шероховатые бархатистые поверхности, приглушённые цвета, отсутствие бликов. Roughness 0.9–1.0, Specular 0.0, Metallic 0.0. Альбедо с высоким содержанием белого, мелкозернистый шум (noise 0.03). Никаких отражений.", descEn: "Rough velvety surfaces, muted colors, no highlights. Roughness 0.9–1.0, Specular 0.0, Metallic 0.0. Albedo with high white content, fine grain noise (0.03). No reflections." }
+        ]
+    },
+    {
+        nameRu: "[2] БАЗОВАЯ ПЛОСКОСТЬ (опора под ногами персонажа)",
+        nameEn: "[2] BASE PLANE (the support under the character's feet)",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|2] Зеркальный черный (Reflective black vinyl)", labelEn: "[1|2] Reflective black vinyl", descRu: "Напольное покрытие из чёрного винила с зеркальной поверхностью, чистые зеркальные отражения, тёмная полированная поверхность.", descEn: "Reflective black vinyl floor, clean mirror reflections, dark polished surface" },
+            { labelRu: "[2|2] Зеркальный белый (Glossy white fashion exhibition)", labelEn: "[2|2] Glossy white fashion exhibition", descRu: "Глянцевый белый пол для модных выставок, яркая полированная поверхность, мягкие нижние отражения.", descEn: "Glossy white fashion exhibition floor, bright polished surface, soft bottom reflections" },
+            { labelRu: "[3|2] Хром (Polished chrome)", labelEn: "[3|2] Polished chrome", descRu: "Полированные хромовые плиты, резкий индустриальный металлический пол, яркие зеркальные отражения.", descEn: "Polished chrome plates, sharp industrial metallic floor, bright mirror reflections" },
+            { labelRu: "[4|2] Сырой бетон (Raw matte concrete)", labelEn: "[4|2] Raw matte concrete", descRu: "Серый матовый бетонный пол, индустриальные бетонные плиты, тонкая зернистая фактура.", descEn: "Raw matte gray concrete floor, industrial concrete slabs, subtle gritty texture" },
+            { labelRu: "[5|2] Асфальт (Rough dark asphalt)", labelEn: "[5|2] Rough dark asphalt", descRu: "Шероховатый тёмный асфальт, зернистая текстура, влажная городская уличная поверхность.", descEn: "Rough dark asphalt ground, gritty texture, wet urban street surface" },
+            { labelRu: "[6|2] Палубная доска (Weathered wooden deck)", labelEn: "[6|2] Weathered wooden deck", descRu: "Состаренные деревянные палубные доски, линейные стыки, грубая морская текстура.", descEn: "Weathered wooden deck planks, linear floor joints, rustic maritime texture" },
+            { labelRu: "[7|2] Паркет (Classic herringbone parquet)", labelEn: "[7|2] Classic herringbone parquet", descRu: "Классический деревянный паркет «ёлочка», элегантная винтажная интерьерная поверхность.", descEn: "Classic wooden herringbone parquet floor, elegant vintage interior surface" },
+            { labelRu: "[8|2] Мрамор (Polished luxury marble)", labelEn: "[8|2] Polished luxury marble", descRu: "Полированный роскошный мраморный пол, гладкая каменная поверхность, элегантные тонкие прожилки.", descEn: "Polished luxury marble floor, smooth stone surface, elegant subtle veins" },
+            { labelRu: "[9|2] Дикий сланец (Rough uneven slate)", labelEn: "[9|2] Rough uneven slate", descRu: "Неровный сланец, тёмные трещиноватые горные породы, фэнтезийная поверхность.", descEn: "Rough uneven slate stone ground, dark cracked mountain rocks, fantasy surface" },
+            { labelRu: "[10|2] Крупный песок (Coarse dry sand)", labelEn: "[10|2] Coarse dry sand", descRu: "Крупный сухой песок, бесшовная пустынная поверхность, матовая текстура, поглощающая тени.", descEn: "Coarse dry sand ground, seamless desert surface, matte texture absorbing shadows" },
+            { labelRu: "[11|2] Выжженная земля (Dry cracked clay)", labelEn: "[11|2] Dry cracked clay", descRu: "Сухая потрескавшаяся глина, иссушенная пустынная поверхность, глубокие геометрические разломы.", descEn: "Dry cracked clay ground, parched desert surface, deep geometric fissures" },
+            { labelRu: "[12|2] Талый лед (Thawing ice sheet)", labelEn: "[12|2] Thawing ice sheet", descRu: "Тающая ледяная поверхность, полупрозрачный морозный налёт, глубокие внутренние трещины.", descEn: "Thawing ice sheet floor, semi-transparent frosty surface, deep internal cracks" },
+            { labelRu: "[13|2] Рифленый алюминий (Industrial diamond plate)", labelEn: "[13|2] Industrial diamond plate", descRu: "Индустриальный рифлёный алюминий, металлический рисунок противоскольжения, резкие блики.", descEn: "Industrial diamond plate steel flooring, metallic tread pattern, sharp highlights" },
+            { labelRu: "[14|2] Стальная решетка (Heavy metal grating)", labelEn: "[14|2] Heavy metal grating", descRu: "Тяжёлая промышленная металлическая решётка, открытая ячеистая поверхность, свет просачивается снизу.", descEn: "Heavy industrial metal grating floor, open mesh surface, light leaks from below" },
+            { labelRu: "[15|2] Космический композит (Futuristic composite)", labelEn: "[15|2] Futuristic composite", descRu: "Футуристические композитные плитки, тёмные матовые техно-панели, светящиеся неоновые швы.", descEn: "Futuristic composite floor tiles, dark matte tech panels, glowing neon seams" },
+            { labelRu: "[16|2] Углеволокно (Matte carbon fiber mesh)", labelEn: "[16|2] Matte carbon fiber mesh", descRu: "Матовое переплетение из углеволокна, высокотехнологичный тёмный узор в клетку.", descEn: "Matte carbon fiber mesh flooring, high-tech dark checkerboard pattern" },
+            { labelRu: "[17|2] Театральный войлок (Absolute matte black felt)", labelEn: "[17|2] Absolute matte black felt", descRu: "Абсолютно матовый чёрный сценический войлок, мягкая тканевая поверхность, поглощает весь свет.", descEn: "Absolute matte black stage felt flooring, soft fabric surface, absorbs all light" },
+            { labelRu: "[18|2] Ковер (Plush high-pile luxury carpet)", labelEn: "[18|2] Plush high-pile luxury carpet", descRu: "Роскошный ковёр с высоким ворсом, мягкая пушистая текстура.", descEn: "Plush high-pile luxury carpet flooring, soft shaggy fabric texture" },
+            { labelRu: "[19|2] Опавшая листва (Thick autumn forest ground)", labelEn: "[19|2] Thick autumn forest ground", descRu: "Толстый слой осенней лесной подстилки, сухие оранжевые и коричневые листья.", descEn: "Thick autumn forest ground layer, fallen dry orange and brown leaves" },
+            { labelRu: "[20|2] Зеленый газон (Lush green grass lawn)", labelEn: "[20|2] Lush green grass lawn", descRu: "Пышный зелёный газон, яркая аккуратно подстриженная спортивная поверхность.", descEn: "Lush green grass lawn, vibrant neatly trimmed sports turf surface" },
+            { labelRu: "[21|2] Мокрый камень (Wet glossy river pebble)", labelEn: "[21|2] Wet glossy river pebble", descRu: "Влажная глянцевая речная галька, блестящая мокрая каменная поверхность, жидкие отражения.", descEn: "Wet glossy river pebble ground, shiny damp stone surface, liquid reflections" },
+            { labelRu: "[22|2] Брусчатка (Old European cobblestone)", labelEn: "[22|2] Old European cobblestone", descRu: "Старая европейская брусчатка, винтажная неровная поверхность из каменных блоков.", descEn: "Old European cobblestone pavement, vintage uneven stone block street surface" },
+            { labelRu: "[23|2] Керамическая плитка (Square glossy ceramic)", labelEn: "[23|2] Square glossy ceramic", descRu: "Квадратная глянцевая керамическая плитка, чистая сетка, стерильный лабораторный пол.", descEn: "Square glossy ceramic tiles, clean grid patterns, sterile laboratory flooring" },
+            { labelRu: "[24|2] Ржавый профнастил (Rusted corrugated metal)", labelEn: "[24|2] Rusted corrugated metal", descRu: "Ржавый рифлёный металлический лист, разложившаяся железная палуба, постапокалиптическая текстура.", descEn: "Rusted corrugated metal sheeting ground, decayed iron deck, post-apocalyptic texture" },
+            { labelRu: "[25|2] Жидкое золото (Liquid gold)", labelEn: "[25|2] Liquid gold", descRu: "Поверхность жидкого золота, глянцевый металлический пол, гладкие ряды расплавленного золота.", descEn: "Liquid gold surface, glossy metallic flooring, smooth molten gold ripples" },
+            { labelRu: "[26|2] Светящийся акрил (Illuminated matte white acrylic)", labelEn: "[26|2] Illuminated matte white acrylic", descRu: "Светящийся матовый белый акриловый пол, поверхность световой панели, бесшовная подсветка снизу.", descEn: "Illuminated matte white acrylic floor, glowing lightbox surface, seamless underlight" },
+            { labelRu: "[27|2] Цифровая матрица (Glowing digital matrix glass)", labelEn: "[27|2] Glowing digital matrix glass", descRu: "Светящийся цифровой матричный стеклянный пол, голографический кибер-сетка снизу.", descEn: "Glowing digital matrix glass flooring, holographic cyber grid pattern below" },
+            { labelRu: "[28|2] Вулканический пепел (Fine dark volcanic ash)", labelEn: "[28|2] Fine dark volcanic ash", descRu: "Мелкий тёмный вулканический пепел, ультра-матовая поверхность древесного угля.", descEn: "Fine dark volcanic ash ground, ultra-matte charcoal powder surface" },
+            { labelRu: "[29|2] Древний барельеф (Ancient stone bas-relief)", labelEn: "[29|2] Ancient stone bas-relief", descRu: "Древние каменные плитки пола, вырезанные мистические руины, выветренный мифологический барельеф.", descEn: "Ancient stone floor tiles, carved mystic ruins, weathered mythological bas-relief" },
+            { labelRu: "[30|2] Колотый кирпич (Chipped brick rubble)", labelEn: "[30|2] Chipped brick rubble", descRu: "Битый кирпичный щебень, поверхность из обломков и мусора, руинированная стройплощадка.", descEn: "Chipped brick rubble ground, debris and rubble surface, ruined building site" }
+        ]
+    },
+    {
+        nameRu: "[3] БЛИЖНИЙ ПЛАН (текстура вокруг персонажа)",
+        nameEn: "[3] CLOSE SHOT (texture around the character)",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|3] Рельефный сланец (Rough dark slate)", labelEn: "[1|3] Rough dark slate", descRu: "Шероховатые тёмные сланцевые стены, острые тяжёлые трещины, тёмная фэнтезийная фактура.", descEn: "Rough dark slate stone walls, sharp heavy rock fractures, dark fantasy interior" },
+            { labelRu: "[2|3] Волокнистый кедр (Aged cedar wood)", labelEn: "[2|3] Aged cedar wood", descRu: "Состаренная кедровая древесина, глубокие органические волокна, выветренные деревянные панели.", descEn: "Aged cedar wood texture, deep organic fibers, weathered rustic wooden panels" },
+            { labelRu: "[3|3] Пористый ракушечник (Porous coquina limestone)", labelEn: "[3|3] Porous coquina limestone", descRu: "Пористая известняковая стена-ракушечник, крупные органические фрагменты раковин, тёплая бежевая текстура.", descEn: "Porous coquina limestone wall, coarse organic shell fragments, warm beige texture" },
+            { labelRu: "[4|3] Сухой песчаник (Fine-grained dry sandstone)", labelEn: "[4|3] Fine-grained dry sandstone", descRu: "Мелкозернистая сухая песчаниковая поверхность, гладкая слоистая пустынная порода.", descEn: "Fine-grained dry sandstone surface, smooth layered desert rock texture" },
+            { labelRu: "[5|3] Вулканическая лава (Porous black volcanic lava)", labelEn: "[5|3] Porous black volcanic lava", descRu: "Пористая чёрная вулканическая лава, острая магматическая порода, базальтовый камень.", descEn: "Porous black volcanic lava surface, sharp igneous rock texture, basaltic stone" },
+            { labelRu: "[6|3] Кристаллическая кора (Crystalline mineral geode)", labelEn: "[6|3] Crystalline mineral geode", descRu: "Кристаллическая минеральная жеода, микро-кварцевые кристаллы, сверкающая сырая каменная текстура.", descEn: "Crystalline mineral geode surface, micro quartz crystals, glittering raw stone texture" },
+            { labelRu: "[7|3] Окаменевшая глина (Baked adobe mud)", labelEn: "[7|3] Baked adobe mud", descRu: "Обожжённая глинобитная стена, матовая землистая поверхность, сеть сухих микротрещин.", descEn: "Baked adobe mud wall, matte earthy surface, network of dry micro-cracks" },
+            { labelRu: "[8|3] Ископаемый янтарь (Smooth polished amber)", labelEn: "[8|3] Smooth polished amber", descRu: "Гладкая полированная стена из янтарной смолы, полупрозрачная органическая текстура, глубокие внутренние слои.", descEn: "Smooth polished amber resin wall, translucent organic texture, deep internal layers" },
+            { labelRu: "[9|3] Опалубочный бетон (Brutalist concrete)", labelEn: "[9|3] Brutalist concrete", descRu: "Бруталистские бетонные стены, гладкая серая поверхность, следы деревянной опалубки и отверстия от стяжек.", descEn: "Brutalist concrete walls, smooth grey surface, wooden formwork grain and bolt holes" },
+            { labelRu: "[10|3] Грубая штукатурка (Coarse textured plaster)", labelEn: "[10|3] Coarse textured plaster", descRu: "Грубая фактурная штукатурка, повреждённая поверхность, реалистичные сколы и вмятины.", descEn: "Coarse textured plaster, distressed stucco surface, realistic chips and dents" },
+            { labelRu: "[11|3] Старый кирпич (Weathered vintage red brick)", labelEn: "[11|3] Weathered vintage red brick", descRu: "Выветренная винтажная красная кирпичная кладка, песчаные швы, ретро-лофт стиль.", descEn: "Weathered vintage red brickwork, gritty mortar joints, retro loft interior style" },
+            { labelRu: "[12|3] Слоеная ржавчина (Heavy layered iron rust)", labelEn: "[12|3] Heavy layered iron rust", descRu: "Тяжёлая слоистая ржавчина, сильно корродированный металлический лист, индустриальная выцветшая патина.", descEn: "Heavy layered iron rust, heavily corroded metal plating, decayed industrial patina" },
+            { labelRu: "[13|3] Оксидированная медь (Velvety turquoise copper patina)", labelEn: "[13|3] Velvety turquoise copper patina", descRu: "Бархатистая бирюзовая патина оксидированной меди, поверхность с реалистичными потёками.", descEn: "Velvety turquoise copper patina, oxidized metal surface with realistic stains" },
+            { labelRu: "[14|3] Поцарапанный титан (Scratched matte titanium)", labelEn: "[14|3] Scratched matte titanium", descRu: "Поцарапанные матовые титановые панели, высокотехнологичная текстура щётки, следы боевого износа.", descEn: "Scratched matte titanium panels, high-tech brushed steel texture, combat wear marks" },
+            { labelRu: "[15|3] Рифленый стальной лист (Industrial corrugated steel)", labelEn: "[15|3] Industrial corrugated steel", descRu: "Индустриальный рифлёный стальной лист, линейные металлические гребни, отражающее железо.", descEn: "Industrial corrugated steel panels, linear metal ridges, reflective iron plating" },
+            { labelRu: "[16|3] Шлифованный алюминий (Brushed aluminum)", labelEn: "[16|3] Brushed aluminum", descRu: "Шлифованная алюминиевая поверхность, чистая серебристая металлическая текстура, направленный сатиновый блеск.", descEn: "Brushed aluminum surface, clean silver metal texture, directional satin sheen" },
+            { labelRu: "[17|3] Матовое углеволокно (High-tech carbon fiber weave)", labelEn: "[17|3] High-tech carbon fiber weave", descRu: "Высокотехнологичное плетёное углеволокно, футуристическая матовая композитная текстура.", descEn: "High-tech carbon fiber weave pattern, futuristic matte composite texture" },
+            { labelRu: "[18|3] Сатинированный пластик (Frosted satin polymer)", labelEn: "[18|3] Frosted satin polymer", descRu: "Матовые сатинированные полимерные панели, полуматовая гладкая поверхность, рассеивающая свет.", descEn: "Frosted satin polymer panels, semi-matte smooth surface, diffuses light" },
+            { labelRu: "[19|3] Глянцевый акрил (High-gloss polished acrylic)", labelEn: "[19|3] High-gloss polished acrylic", descRu: "Высокоглянцевая полированная акриловая поверхность, гладкая яркая пластиковая текстура, резкие блики.", descEn: "High-gloss polished acrylic surface, sleek vibrant plastic texture, sharp highlights" },
+            { labelRu: "[20|3] Перфорированная панель (Perforated metal paneling)", labelEn: "[20|3] Perforated metal paneling", descRu: "Перфорированная металлическая панель, регулярный узор крошечных отверстий, научно-фантастическая решётка.", descEn: "Perforated metal paneling, regular pattern of tiny micro-holes, sci-fi grill texture" },
+            { labelRu: "[21|3] Композитная броня (Matte ballistic composite)", labelEn: "[21|3] Matte ballistic composite", descRu: "Матовая баллистическая композитная плита, тёмная тактическая полимерная броня.", descEn: "Matte ballistic composite plating, dark tactical polymer shield texture" },
+            { labelRu: "[22|3] Рельефный поликарбонат (Ribbed polycarbonate sheeting)", labelEn: "[22|3] Ribbed polycarbonate sheeting", descRu: "Рифлёный поликарбонатный лист, вертикальные пластиковые канавки, полые внутренние структуры.", descEn: "Ribbed polycarbonate sheeting, vertical plastic grooves, interior hollow structures" },
+            { labelRu: "[23|3] Грубый брезент (Heavy military canvas)", labelEn: "[23|3] Heavy military canvas", descRu: "Тяжёлая военная брезентовая ткань, грубая фактура, толстая драпировка.", descEn: "Heavy military canvas texture, coarse fabric folds, thick tarp drapery" },
+            { labelRu: "[24|3] Льняная рогожка (Rustic burlap)", labelEn: "[24|3] Rustic burlap", descRu: "Деревенская мешковина, грубое плетёное льняное волокно, сырой органический материал.", descEn: "Rustic burlap texture, coarse woven linen fibers, raw organic sackcloth material" },
+            { labelRu: "[25|3] Стеганая кожа (Luxury tufted leather)", labelEn: "[25|3] Luxury tufted leather", descRu: "Роскошная стёганая кожаная обивка, элегантная ромбовидная прострочка, мягкий обивочный материал.", descEn: "Luxury tufted leather upholstery, elegant diamond stitching, plush padded material" },
+            { labelRu: "[26|3] Акустический рельеф (Pyramidal acoustic foam)", labelEn: "[26|3] Pyramidal acoustic foam", descRu: "Пирамидальный акустический поролон, вспененный полиуретан с открытыми ячейками, тёмный матовый.", descEn: "Pyramidal acoustic foam padding, open-cell polyurethane foam texture, dark matte" },
+            { labelRu: "[27|3] Плотный войлок (Thick non-woven wool felt)", labelEn: "[27|3] Thick non-woven wool felt", descRu: "Толстый нетканый шерстяной войлок, плотная прессованная тканевая поверхность, неотражающий материал.", descEn: "Thick non-woven wool felt, solid pressed fabric surface, non-reflective material" },
+            { labelRu: "[28|3] Мятая фольга (Crinkled metallic foil)", labelEn: "[28|3] Crinkled metallic foil", descRu: "Мятая металлическая фольга, острые хаотичные заломы, бликующие металлические грани.", descEn: "Crinkled metallic foil surface, sharp chaotic metal creases, specular glints" },
+            { labelRu: "[29|3] Усадочная пленка (Taut shrink wrap vinyl)", labelEn: "[29|3] Taut shrink wrap vinyl", descRu: "Натянутая виниловая термоусадочная плёнка, гладкое пластиковое натяжение, мягкие органические складки.", descEn: "Taut shrink wrap vinyl membrane, smooth plastic tension, soft organic folds" },
+            { labelRu: "[30|3] Чешуйчатый композит (Overlapping carbon scales)", labelEn: "[30|3] Overlapping carbon scales", descRu: "Перекрывающиеся чешуйки из углеволокна, сочленённый броневой узор.", descEn: "Overlapping carbon scales surface, articulated armor plating pattern" }
+        ]
+    },
+    {
+        nameRu: "[4] ДАЛЬНИЙ ПЛАН",
+        nameEn: "[4] LONG SHOT",
+        marquee: false,
+        presets: [
+            { labelRu: "[1|4] Театральный бархат (Theatrical velvet)", labelEn: "[1|4] Theatrical velvet", descRu: "Абсолютно матовый чёрный театральный бархат на заднем плане, тёмная пустота, бездна, бесконечность, размытый фон.", descEn: "Absolute matte black theatrical velvet background, dark void, abyss, infinity, blurry background" },
+            { labelRu: "[2|4] Циклорама (Seamless white studio backdrop)", labelEn: "[2|4] Seamless white studio backdrop", descRu: "Бесшовный чистый минималистичный белый студийный фон, мягкий бесконечный экран, глубина резкости.", descEn: "Seamless clean minimalist white studio backdrop, soft infinity screen, depth of field" },
+            { labelRu: "[3|4] Сатинированный акрил (Satin acrylic backlight)", labelEn: "[3|4] Satin acrylic backlight", descRu: "Гигантская светящаяся белая акриловая стена, студийный фон с подсветкой софтбокса, размытый фон.", descEn: "Giant glowing white acrylic wall, softbox studio backlight background, blurry background" },
+            { labelRu: "[4|4] Светодиодный экран (Out-of-focus LED screen)", labelEn: "[4|4] Out-of-focus LED screen", descRu: "Не в фокусе цифровой LED-экран на заднем плане, мелкая пиксельная сетка, технологичный фон, боке.", descEn: "Out-of-focus digital LED screen backdrop, fine pixel grid, tech background, bokeh" },
+            { labelRu: "[5|4] Монументальная скала (Massive mountain cliff)", labelEn: "[5|4] Massive mountain cliff", descRu: "Массивная тёмная скальная стена, эпическая неровная каменная поверхность, глубина резкости.", descEn: "Massive solid dark mountain cliff background, epic rugged rock wall, depth of field" },
+            { labelRu: "[6|4] Туманная бездна (Volumetric fog backdrop)", labelEn: "[6|4] Volumetric fog backdrop", descRu: "Глубокий загадочный объёмный туман, густой драматический кинематографичный дым, размытый фон.", descEn: "Deep mysterious volumetric fog backdrop, thick dramatic cinematic smoke, blurry background" },
+            { labelRu: "[7|4] Космическая туманность (Deep space nebula)", labelEn: "[7|4] Deep space nebula", descRu: "Фон с космической туманностью глубокого космоса, далёкие звёзды и светящийся газ, мечтательное боке.", descEn: "Deep space cosmic nebula background, distant stars and glowing gas, dreamy bokeh" },
+            { labelRu: "[8|4] Силуэты мегаполиса (Blurry city skyline)", labelEn: "[8|4] Blurry city skyline", descRu: "Размытый кинематографичный ночной горизонт города, далёкие силуэты небоскрёбов в стиле киберпанк, неоновое боке.", descEn: "Blurry cinematic city skyline at night, distant cyberpunk skyscraper silhouettes, neon bokeh" },
+            { labelRu: "[9|4] Неоновые трубки (Vertical neon tubes)", labelEn: "[9|4] Vertical neon tubes", descRu: "Не в фокусе фон из вертикальных неоновых светящихся трубок, красочное абстрактное боке.", descEn: "Out-of-focus background of vertical neon glowing light tubes, colorful abstract bokeh" },
+            { labelRu: "[10|4] Готический витраж (Gothic stained glass)", labelEn: "[10|4] Gothic stained glass", descRu: "Массивный величественный готический витраж на заднем плане, драматические лучи света, глубина резкости.", descEn: "Massive majestic gothic stained glass window backdrop, dramatic light rays, depth of field" },
+            { labelRu: "[11|4] Живописный холст (Abstract oil painting canvas)", labelEn: "[11|4] Abstract oil painting canvas", descRu: "Художественный абстрактный фон из холста с масляной живописью, мягкие классические портретные текстуры, размытый фон.", descEn: "Artistic abstract oil painting canvas backdrop, soft classical portrait textures, blurry background" },
+            { labelRu: "[12|4] Многослойный тюль (Layers of mesh curtains)", labelEn: "[12|4] Layers of mesh curtains", descRu: "Слои полупрозрачных мягких сетчатых штор, эфирная размытая ткань, висящая вдалеке, глубина резкости.", descEn: "Layers of translucent soft mesh curtains, ethereal blurry fabric hanging in the distance, depth of field" },
+            { labelRu: "[13|4] Индустриальные жалюзи (Metallic window louvers)", labelEn: "[13|4] Metallic window louvers", descRu: "Гигантские металлические жалюзи на окне, драматические объёмные лучи света, пронзающие сквозь, размытый фон.", descEn: "Huge metallic window louvers backdrop, dramatic volumetric god-rays piercing through, blurry background" },
+            { labelRu: "[14|4] Стена водопада (Blurry waterfall)", labelEn: "[14|4] Blurry waterfall", descRu: "Размытый бурлящий водопад на заднем плане, вертикальный поток воды, туман и движение жидкости.", descEn: "Blurry rushing waterfall background, vertical water stream backdrop, mist and liquid motion" },
+            { labelRu: "[15|4] Заброшенный бункер (Decayed concrete vault)", labelEn: "[15|4] Decayed concrete vault", descRu: "Тёмный разрушенный бетонный свод, уходящие в тень тоннели, глубина резкости.", descEn: "Dark decayed concrete vault interior backdrop, receding shadow tunnels, depth of field" },
+            { labelRu: "[16|4] Чаща леса (Deep forest in mist)", labelEn: "[16|4] Deep forest in mist", descRu: "Таинственный лес с деревьями в утреннем тумане, природные силуэты деревьев, размытый фон.", descEn: "Mysterious deep forest trees in morning mist background, natural wood silhouettes, blurry background" },
+            { labelRu: "[17|4] Дюны пустыни (Golden desert dunes)", labelEn: "[17|4] Golden desert dunes", descRu: "Мягкие золотистые песчаные дюны на закате, плавные холмы, глубина резкости.", descEn: "Soft golden desert sand dunes at sunset backdrop, smooth rolling hills, depth of field" },
+            { labelRu: "[18|4] Облачное небо (Dramatic storm clouds)", labelEn: "[18|4] Dramatic storm clouds", descRu: "Эпические драматические грозовые облака, пасмурное атмосферное небо, размытый фон.", descEn: "Epic dramatic storm clouds background, overcast atmospheric sky backdrop, blurry background" },
+            { labelRu: "[19|4] Цифровая сетка (Futuristic laser grid)", labelEn: "[19|4] Futuristic laser grid", descRu: "Футуристический светящийся лазерный сетчатый фон, виртуальное киберпространство, линии чертежа, размытый фон.", descEn: "Futuristic glowing laser grid background, virtual cyberspace blueprint lines, blurry background" },
+            { labelRu: "[20|4] Архивные стеллажи (Blurry library bookshelves)", labelEn: "[20|4] Blurry library bookshelves", descRu: "Бесконечные ряды размытых библиотечных полок, массивные архивные хранилища, глубина резкости.", descEn: "Endless rows of blurred library bookshelves backdrop, massive archive vaults, depth of field" },
+            { labelRu: "[21|4] Лазерный занавес (Vertical neon laser beams)", labelEn: "[21|4] Vertical neon laser beams", descRu: "Стена из вертикальных неоновых лазерных лучей, чёткие футуристические полосы, боке.", descEn: "Wall of vertical neon laser light beams background, sharp futuristic sci-fi bars, bokeh" },
+            { labelRu: "[22|4] Круглый портал (Circular sci-fi portal)", labelEn: "[22|4] Circular sci-fi portal", descRu: "Огромный круглый научно-фантастический портал, светящаяся сердцевина, высокотехнологичное оборудование, размытый фон.", descEn: "Huge circular sci-fi portal ring backdrop, glowing core, high-tech machinery, blurry background" },
+            { labelRu: "[23|4] Разрушенный храм (Ancient Greek ruins)", labelEn: "[23|4] Ancient Greek ruins", descRu: "Древние греческие разрушенные каменные колонны, величественные мраморные столпы, глубина резкости.", descEn: "Ancient Greek ruined stone pillars background, majestic marble columns, depth of field" },
+            { labelRu: "[24|4] Стена огня (Blurry fire inferno)", labelEn: "[24|4] Blurry fire inferno", descRu: "Размытый бушующий огненный ад, мягкое светящееся абстрактное боке пламени, тепловое искажение.", descEn: "Blurry raging fire inferno background, soft glowing abstract flame bokeh, heat distortion" },
+            { labelRu: "[25|4] Зеркальная рекурсия (Infinity mirror room)", labelEn: "[25|4] Infinity mirror room", descRu: "Фон с бесконечными зеркальными отражениями, рекурсивные глубокие повторяющиеся кадры, размытый фон.", descEn: "Infinity mirror room reflection backdrop, recursive deep duplicate frames, blurry background" },
+            { labelRu: "[26|4] Серверная стойка (Blurry server racks)", labelEn: "[26|4] Blurry server racks", descRu: "Размытые серверные стойки в дата-центре, мигающие зелёные и красные лампочки мейнфрейма, технологическое боке.", descEn: "Blurry server racks in a data center background, blinking green and red mainframe LED lights, tech bokeh" },
+            { labelRu: "[27|4] Занавес из цепей (Industrial iron chains)", labelEn: "[27|4] Industrial iron chains", descRu: "Висящие промышленные тяжёлые железные цепи, повторяющиеся вертикальные линии звеньев, глубина резкости.", descEn: "Hanging industrial heavy iron chains background, repeating vertical link lines, depth of field" },
+            { labelRu: "[28|4] Ледяная стена (Massive frozen glacier)", labelEn: "[28|4] Massive frozen glacier", descRu: "Массивная стена замёрзшего ледника, светящаяся морозная поверхность, кинематографичный контровой свет, размытый фон.", descEn: "Massive frozen glacier wall backdrop, glowing icy frost surface, cinematic backlight, blurry background" },
+            { labelRu: "[29|4] Художественное боке (Abstract bokeh lights)", labelEn: "[29|4] Abstract bokeh lights", descRu: "Абстрактные размытые огни, тёплое креативное оптическое боке объектива, круговые паттерны.", descEn: "Abstract blurred lights background, warm creative camera lens optical bokeh circular patterns" },
+            { labelRu: "[30|4] Торжественный занавес (Heavy theater drapery)", labelEn: "[30|4] Heavy theater drapery", descRu: "Тяжёлый классический театральный занавес, глубокие драматические складки ткани, размытый фон.", descEn: "Heavy classic theater stage drapery curtain backdrop, deep dramatic fabric folds, blurry background" }
+        ]
+    },
+    {
+        nameRu: "[5] РАКУРС",
+        nameEn: "[5] ANGLE",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|5] Героический анфас (Full-Body Eye-Level)", labelEn: "[1|5] Full-Body Eye-Level", descRu: "Камера строго на уровне глаз, персонаж в полный рост. Пол, ближний и дальний планы работают на 100%. Симметричная центрированная композиция.", descEn: "Symmetrical full body shot, eye-level cinematic camera, perfectly centered framing" },
+            { labelRu: "[2|5] Взгляд снизу (Low-Angle Power)", labelEn: "[2|5] Low-Angle Power", descRu: "Камера опущена к полу и смотрит вверх, делая героя монументальным. Нижний ракурс для придания мощи и величия.", descEn: "Low-angle heroic full body shot, worm's-eye view looking up at the character, making the subject look powerful and tall" },
+            { labelRu: "[3|5] Тактический вид (High-Angle Top-Down)", labelEn: "[3|5] High-Angle Top-Down", descRu: "Камера высоко вверху, смотрит на персонажа под углом вниз (стиль RPG-игр). Подчёркивает окружение и стратегическую позицию.", descEn: "High-angle camera view, high-top full body shot looking down from above, strategic gaming character selection style" },
+            { labelRu: "[4|5] Центральный тоннель (Deep Symmetry)", labelEn: "[4|5] Deep Symmetry", descRu: "Строгая ростовая симметрия, где все линии сходятся ровно за персонажем. Драматическая архитектурная глубина.", descEn: "Symmetrical full body shot, central vanishing point, dramatic architectural lines converging directly behind the character" },
+            { labelRu: "[5|5] Форсированный коридор (Extreme Tapering)", labelEn: "[5|5] Extreme Tapering", descRu: "Ростовой кадр в узком пространстве, улетающем в бесконечную глубь. Стены драматично сужаются к дальней точке.", descEn: "Forced perspective full body shot, extreme deep tunnel effect, walls dramatically tapering into the distant background" },
+            { labelRu: "[6|5] Сдвиг по третям (Asymmetrical Thirds)", labelEn: "[6|5] Asymmetrical Thirds", descRu: "Персонаж в полный рост смещён влево или вправо, открывая вид на перспективу сцены. Динамическое правило третей.", descEn: "Off-center full body shot, cinematic rule of thirds framing, dynamic perspective lines stretching to the empty side" },
+            { labelRu: "[7|5] Широкоугольный динамик (18mm Wide)", labelEn: "[7|5] 18mm Wide", descRu: "Экстремально широкий угол в полный рост. Искажает углы, утрирует масштаб пола и ближних объектов.", descEn: "Ultra-wide angle full body shot, 18mm camera lens, dramatic perspective distortion of the foreground floor and walls" },
+            { labelRu: "[8|5] Многоуровневый каскад (Vertical Depth)", labelEn: "[8|5] Vertical Depth", descRu: "Камера подчёркивает высоту. Персонаж стоит на подиуме или ступенях, линии уходят вверх.", descEn: "Vertical perspective full body composition, character standing on steps, multi-level platforms ascending upwards, emphasis on height" },
+            { labelRu: "[9|5] Обратный фокус (Reversed Illusion)", labelEn: "[9|5] Reversed Illusion", descRu: "Иллюзорный кадр, где пространство за персонажем кажется расширяющимся, а не сужающимся. Сюрреалистическая обратная перспектива.", descEn: "Surreal reversed perspective full body shot, background elements expanding outwards, dreamlike space illusion" },
+            { labelRu: "[10|5] Студийный глянец (Catalog Framing)", labelEn: "[10|5] Catalog Framing", descRu: "Идеально ровный, чистый ростовой ракурс для демонстрации деталей экипировки. Коммерческая студийная съёмка.", descEn: "Commercial studio full body presentation shot, straight angle, crisp focus from head to toe, lookbook framing" },
+            { labelRu: "[11|5] Кинематографичный средний (Cinematic Medium Shot)", labelEn: "[11|5] Cinematic Medium Shot", descRu: "Классический кадр по пояс. Идеальный баланс персонажа и окружения. Фокус на торсе и одежде.", descEn: "Cinematic medium shot, waist-up framing, balanced camera perspective, perfect for armor and clothing details" },
+            { labelRu: "[12|5] Американский ракурс (Cowboy Shot)", labelEn: "[12|5] Cowboy Shot", descRu: "Кадрирование чуть выше колен. Фокус на оружии на поясе и бёдрах. Динамичная уверенная поза.", descEn: "Classic cinematic cowboy shot, knee-up framing, slight low-angle tilt, dynamic confident pose" },
+            { labelRu: "[13|5] Сжатый объем (135mm Telephoto)", labelEn: "[13|5] 135mm Telephoto", descRu: "Поясной кадр на длиннофокусный объектив. Задний план визуально «прижимается» к герою, сжимая перспективу.", descEn: "Telephoto lens compression medium shot, 135mm lens effect, background visually flattened closer behind the character" },
+            { labelRu: "[14|5] Профиль в три четверти (Three-Quarter View)", labelEn: "[14|5] Three-Quarter View", descRu: "Персонаж развёрнут полубоком, камера выхватывает глубину стены ближнего плана. Динамическая перспектива.", descEn: "Three-quarter angle medium shot, chest-up framing, dynamic perspective of the surrounding wall leading into background" },
+            { labelRu: "[15|5] Анаморфный эпик (Anamorphic Medium)", labelEn: "[15|5] Anamorphic Medium", descRu: "Широкоэкранный поясной формат (2.39:1) с размытыми краями кадра. Кинематографическая горизонтальная глубина.", descEn: "Anamorphic widescreen medium shot, aspect ratio 2.39:1 style, dramatic cinematic perspective with horizontal depth" },
+            { labelRu: "[16|5] Взгляд из-за угла (Over-the-Shoulder Medium)", labelEn: "[16|5] Over-the-Shoulder Medium", descRu: "Камера смотрит из-за элемента ближнего плана (например, края стены) на персонажа по пояс. Слоистая глубина.", descEn: "Over-the-shoulder medium shot, foreground element framing the character, deep layered perspective" },
+            { labelRu: "[17|5] Ортогональный лофт (Tilt-Shift Medium)", labelEn: "[17|5] Tilt-Shift Medium", descRu: "Поясной кадр с жёстким контролем вертикалей — стены ближнего плана идеально параллельны. Архитектурная сетка.", descEn: "Tilt-shift style medium shot, corrected vertical lines, surrounding textures perfectly straight, architectural grid" },
+            { labelRu: "[18|5] Портальная арка (Telescopic Medium)", labelEn: "[18|5] Telescopic Medium", descRu: "Герой по пояс вписан в геометрию ближнего плана (проём, рамка), уводящую взгляд назад. Слоистый кадр.", descEn: "Telescopic medium framing, receding portal arch elements tightly surrounding the character, deep layered look" },
+            { labelRu: "[19|5] Нижний средний (Low-Angle Medium)", labelEn: "[19|5] Low-Angle Medium", descRu: "Камера смотрит на торс и лицо снизу вверх, придавая персонажу угрожающий вид. Драматический наклон.", descEn: "Low-angle medium shot, waist-up framing, dramatic upward camera tilt, making the character look menacing" },
+            { labelRu: "[20|5] Абстрактный фокус (Macro-DoF Medium)", labelEn: "[20|5] Macro-DoF Medium", descRu: "Поясной кадр, где всё, что дальше полуметра от героя, мгновенно уходит в сильное размытие. Макро-эффект.", descEn: "Intense depth of field medium shot, macro lens effect, ultra-blurry background, crisp sharp details on the character" },
+            { labelRu: "[21|5] Крупный план (Classic Close-Up)", labelEn: "[21|5] Classic Close-Up", descRu: "Лицо и плечи. Камера на уровне глаз. Полный фокус на эмоциях, макияже или шлеме. Пол не попадает в кадр.", descEn: "Cinematic close-up shot, shoulder-up framing, camera at eye-level, intimate focus on face and headwear" },
+            { labelRu: "[22|5] Экстремальный крупный (Extreme Close-Up)", labelEn: "[22|5] Extreme Close-Up", descRu: "Фокус строго на глазах или деталях маски. Окружение превращается в чистую абстрактную текстуру.", descEn: "Extreme close-up shot, macro focus on character's eyes and face details, background completely blurred out" },
+            { labelRu: "[23|5] Голливудский портрет (Glamour Close-Up)", labelEn: "[23|5] Glamour Close-Up", descRu: "Мягкий, слегка размытый по краям портрет с акцентом на свет и блики в глазах. Высокий глянец.", descEn: "High-end glamour portrait close-up, soft camera lens focus, crisp face details with beautiful catchlights in the eyes" },
+            { labelRu: "[24|5] Контровой силуэт (Backlit Portrait)", labelEn: "[24|5] Backlit Portrait", descRu: "Лицо в полутени, мощный свет сзади очерчивает контуры головы и плеч. Драматичный рим-лайтинг.", descEn: "Intense rim lighting close-up, backlit profile, sharp light contouring hair and shoulders, dark dramatic face" },
+            { labelRu: "[25|5] Профильный излом (Profile Close-Up)", labelEn: "[25|5] Profile Close-Up", descRu: "Камера снимает персонажа строго в профиль, размывая дальний план в линию. Чистый силуэт лица.", descEn: "Side profile close-up shot, clean sharp silhouette of the face, linear perspective background out of focus" },
+            { labelRu: "[26|5] Срез сверху (Top-Down Portrait)", labelEn: "[26|5] Top-Down Portrait", descRu: "Камера смотрит на лицо и плечи строго сверху вниз. Необычный вертикальный ракурс.", descEn: "High-angle close-up portrait, looking directly down at the character's face and shoulders, unusual perspective" },
+            { labelRu: "[27|5] Искажённый кибер-портрет (Fisheye Close-Up)", labelEn: "[27|5] Fisheye Close-Up", descRu: "Экстремальный портрет «рыбий глаз» с полусферическим искажением лица в центре. Варп-перспектива.", descEn: "Fisheye lens distortion close-up, spherical face framing, warped perspective lines surrounding the head" },
+            { labelRu: "[28|5] Кинематографичный наезд (Tight Cinematic Close-Up)", labelEn: "[28|5] Tight Cinematic Close-Up", descRu: "Портрет со смещённой композицией в стиле стоп-кадра из кино. Драматичный кинокадр.", descEn: "Tight cinematic close-up, dramatic movie-still framing, off-center face composition, shallow depth of field" },
+            { labelRu: "[29|5] Портрет в рамке (Framed Close-Up)", labelEn: "[29|5] Framed Close-Up", descRu: "Текстура ближнего плана обрезает кадр по бокам, создавая узкое окно для лица. Глубокий фокус.", descEn: "Vignetted close-up portrait, geometric textures of the immediate foreground tightly framing the face, deep focus" },
+            { labelRu: "[30|5] Динамичный наклон (Dutch Angle Close-Up)", labelEn: "[30|5] Dutch Angle Close-Up", descRu: "Камера сильно завалена набок по диагонали (голландский угол). Рождает чувство безумия, тревоги или хаоса.", descEn: "Dutch angle close-up shot, tilted camera perspective, diagonal face composition, dramatic suspenseful look" }
+        ]
+    },
+    {
+        nameRu: "[6] СВЕТ И ЦВЕТ",
+        nameEn: "[6] LIGHT AND COLOR",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|6] Рембрандтовский свет (Chiaroscuro)", labelEn: "[1|6] Chiaroscuro", descRu: "Кьяроскуро, классическая схема Рембрандта, глубокие драматические тени, тёплый единый источник под углом 45 градусов.", descEn: "Chiaroscuro lighting, Rembrandt lighting recipe, deep dramatic shadows, warm single light source from 45-degree angle" },
+            { labelRu: "[2|6] Нуар (Низкий ключ)", labelEn: "[2|6] Film noir (Low key)", descRu: "Стиль фильм-нуар, низко-ключевое освещение, высококонтрастные монохромные тона, резкие тени, мрачная атмосфера.", descEn: "Film noir style, low-key lighting, high-contrast monochrome tones, stark shadows, moody dark atmosphere" },
+            { labelRu: "[3|6] Объемные лучи (God rays)", labelEn: "[3|6] God rays", descRu: "Объёмное освещение, интенсивные лучи света, пронзающие темноту, видимые пылинки в световых столбах, кинематографично.", descEn: "Volumetric lighting, intense god-rays piercing through darkness, visible dust motes in light shafts, cinematic" },
+            { labelRu: "[4|6] Контровой силуэт (Rim light)", labelEn: "[4|6] Rim light", descRu: "Интенсивный контровой свет, сильная подсветка сзади, создающая силуэт персонажа, отделение от фона, блики по краю.", descEn: "Intense rim lighting, strong backlight contouring the character's silhouette, separation from background, edge highlights" },
+            { labelRu: "[5|6] Золотой час", labelEn: "[5|6] Golden hour", descRu: "Освещение золотого часа, тёплые янтарные и медовые тона, мягкие длинные тени, объёмное свечение заката.", descEn: "Golden hour lighting, warm amber and honey tones, soft long shadows, volumetric sunset glow" },
+            { labelRu: "[6|6] Пасмурный день (Высокий ключ)", labelEn: "[6|6] Overcast day (High key)", descRu: "Высоко-ключевое освещение, пасмурный мягкий дневной свет, рассеянные тени, яркие чистые цвета, нейтральный кинематографичный тон.", descEn: "High-key lighting, overcast soft daylight, defused shadows, bright clean colors, neutral cinematic tone" },
+            { labelRu: "[7|6] Анаморфные блики", labelEn: "[7|6] Anamorphic flares", descRu: "Кинематографичные анаморфные блики объектива, горизонтальные синие полосы, атмосферный свет при низкой освещённости.", descEn: "Cinematic anamorphic lens flares, horizontal blue streak flares, moody atmospheric low-light setup" },
+            { labelRu: "[8|6] Вспышка молнии", labelEn: "[8|6] Lightning flash", descRu: "Высококонтрастное стробоскопическое освещение, эффект внезапной яркой вспышки молнии, холодные синие блики, глубокие чёрные тени.", descEn: "High-contrast strobe lighting effect, sudden bright flash of lightning, cool blue highlights, pitch-black shadows" },
+            { labelRu: "[9|6] Эльфийское свечение", labelEn: "[9|6] Elven glow", descRu: "Эфирное биолюминесцентное освещение, магическое мягкое свечение, палитра пастельной мяты и лаванды, мечтательная атмосфера.", descEn: "Ethereal bioluminescent lighting, magical soft glow, pastel mint and lavender color palette, dreamlike atmosphere" },
+            { labelRu: "[10|6] Некромантия (Тёмная магия)", labelEn: "[10|6] Necromancy (Dark magic)", descRu: "Зловещее токсично-зелёное освещение, палитра глубокого обсидиана, тёмное нечестивое магическое свечение, отбрасывающее неестественно длинные тени.", descEn: "Eerie toxic green and deep obsidian color palette, dark unholy magical glow, casting long unnatural shadows" },
+            { labelRu: "[11|6] Пламя факелов", labelEn: "[11|6] Torch flames", descRu: "Тёплое освещение от огня, мерцающее оранжевое и янтарное свечение, глубокие танцующие тени, цветокоррекция в стиле средневековья.", descEn: "Warm firelight illumination, flickering orange and amber glow, deep dancing shadows, rustic medieval color grading" },
+            { labelRu: "[12|6] Мистическая луна", labelEn: "[12|6] Mystic moon", descRu: "Холодный лунный свет, палитра бледного серебра и глубокого индиго, холодная мрачная ночная атмосфера, мягкое ночное свечение.", descEn: "Cool lunar light, pale silver and deep indigo tones, cold moody nighttime atmosphere, soft night-glow" },
+            { labelRu: "[13|6] Небесный триумф", labelEn: "[13|6] Celestial triumph", descRu: "Божественный небесный свет, сияющие золотые и чисто-белые лучи, льющиеся сверху, святая величественная атмосфера.", descEn: "Divine celestial light, radiant gold and pure white rays streaming from above, holy majestic atmosphere" },
+            { labelRu: "[14|6] Осенняя меланхолия", labelEn: "[14|6] Autumn melancholy", descRu: "Приглушённые землистые цвета, палитра деревенской охры и терракоты, десатурированные тона, унылый мягкий свет.", descEn: "Muted earthy colors, rustic ochre and terracotta palette, desaturated tones, somber soft light" },
+            { labelRu: "[15|6] Киберпанк (Неон)", labelEn: "[15|6] Cyberpunk (Neon)", descRu: "Яркое неоновое освещение в стиле киберпанк, дуотон циан-маджента, электрик-блюз и горячие розовые отражения.", descEn: "Vibrant cyberpunk neon lighting, dual-tone cyan and magenta color palette, electric blue and hot pink reflections" },
+            { labelRu: "[16|6] Синтвейв / Ретрофутуризм", labelEn: "[16|6] Synthwave / Retrofuturism", descRu: "Эстетика синтвейва 1980-х, палитра тёплого фиолетового и неонового оранжевого, освещение в стиле ретро-футуристической сетки заката.", descEn: "1980s synthwave aesthetic, warm violet and neon orange color palette, retro-futuristic grid sunset lighting vibe" },
+            { labelRu: "[17|6] Стерильная лаборатория", labelEn: "[17|6] Sterile lab", descRu: "Холодное клиническое освещение, палитра флуоресцентного белого и бледно-голубого, среда без теней, стерильный высокотехнологичный вид.", descEn: "Cold clinical lighting, fluorescent white and pale blue color palette, shadowless environment, sterile high-tech look" },
+            { labelRu: "[18|6] Космическая станция", labelEn: "[18|6] Space station", descRu: "Освещение глубокого космоса, аварийные мигающие красные и индустриальные янтарные предупреждающие огни, высококонтрастное научно-фантастическое настроение.", descEn: "Deep space interior lighting, emergency blinking red and industrial amber warning lights, high-contrast sci-fi mood" },
+            { labelRu: "[19|6] Токсичный радар", labelEn: "[19|6] Toxic radar", descRu: "Монохромное радиоактивное зелёное освещение, оттенок старых фосфорных дисплеев, высококонтрастные зелёные оттенки, терминальный вид.", descEn: "Monochromatic radioactive green lighting, retro phosphor display tint, high-contrast green hues, terminal computer look" },
+            { labelRu: "[20|6] Квантовый лазер", labelEn: "[20|6] Quantum laser", descRu: "Резкие неоновые красные лазерные линии, высокотехнологичная тёмная атмосфера, геометрическое багровое освещение, разрезающее тени.", descEn: "Sharp neon red laser lines, high-tech dark atmosphere, geometric crimson illumination cutting through shadows" },
+            { labelRu: "[21|6] Журнальный глянец (Фэшн)", labelEn: "[21|6] Magazine gloss (Fashion)", descRu: "Высококлассное коммерческое студийное освещение, двойная установка софтбоксов, чистая цветокоррекция, яркие сбалансированные цвета.", descEn: "High-end commercial studio lighting, dual softbox setup, clean color grading, vibrant balanced colors, sleek look" },
+            { labelRu: "[22|6] Монохромный контраст", labelEn: "[22|6] Monochrome contrast", descRu: "Резкая чёрно-белая цветокоррекция, серебристые блики, глубокие чернильно-чёрные тени, вечный художественный контраст.", descEn: "Stark black and white color grading, silver highlights, deep ink-black shadows, timeless artistic contrast" },
+            { labelRu: "[23|6] Пастельный минимализм", labelEn: "[23|6] Pastel minimalism", descRu: "Мягкая пастельная палитра, приглушённые пудрово-розовые, мятные и кремовые тона, минимальное чистое рассеянное освещение.", descEn: "Soft pastel color palette, muted powdery pink, mint, and cream tones, minimal clean diffuse lighting" },
+            { labelRu: "[24|6] Поп-арт", labelEn: "[24|6] Pop art", descRu: "Высоконасыщенная цветовая палитра, яркие блочные цвета, высококонтрастное освещение в стиле комиксов, яркая поп-эстетика.", descEn: "High-saturation color palette, bold block colors, comic book style high-contrast lighting, vibrant pop aesthetic" },
+            { labelRu: "[25|6] Жидкое золото (Роскошь)", labelEn: "[25|6] Liquid gold (Luxury)", descRu: "Монохромная цветокоррекция в золотых тонах, тёплое роскошное золотистое отражение, высокоглянцевый металлический блеск.", descEn: "Monochromatic opulent gold color grading, warm luxurious golden reflection, high-gloss metallic sheen" },
+            { labelRu: "[26|6] За кулисами (Бэкстейдж)", labelEn: "[26|6] Backstage", descRu: "Грубое освещение за кулисами, горячие галогенные лампы, тёплый блик объектива, сырая индустриальная смесь тёплых и холодных тонов.", descEn: "Gritty backstage lighting, hot halogen lamps, warm lens glare, raw industrial warm and cool color mix" },
+            { labelRu: "[27|6] Радиационная пустошь", labelEn: "[27|6] Radiation wasteland", descRu: "Десатурированная постапокалиптическая цветокоррекция, болезненно-жёлтые и бледно-оливковые тона, пыльная смоговая атмосфера, резкое солнце.", descEn: "Desaturated post-apocalyptic color grading, sickly yellow and pale olive tones, dusty smog atmosphere, harsh sun" },
+            { labelRu: "[28|6] Психоделический трип", labelEn: "[28|6] Psychedelic trip", descRu: "Триповская сюрреалистическая хроматическая аберрация, переливающаяся цветокоррекция, искажённое калейдоскопическое освещение снов.", descEn: "Trippy surreal chromatic aberration, shifting rainbow color grading, distorted kaleidoscopic dream lighting" },
+            { labelRu: "[29|6] Хоррор (Саспенс)", labelEn: "[29|6] Horror (Suspense)", descRu: "Глубокое монохромное кроваво-красное освещение, устрашающие саспенс-тени, тёмная зловещая цветокоррекция фильмов ужасов.", descEn: "Deep monochromatic blood-red lighting, terrifying suspenseful shadows, dark sinister horror movie grading" },
+            { labelRu: "[30|6] Индустриальный налет", labelEn: "[30|6] Industrial tint", descRu: "Грубая кросс-процессинговая цветокоррекция, тяжёлый холодный сине-зелёный оттенок в тенях, тёплые медные блики, кинематографичный ржавый тон.", descEn: "Gritty cross-processed color grading, heavy cold greenish-blue tint in shadows, warm copper highlights, cinematic rust tone" }
+        ]
+    },
+    {
+        nameRu: "[7] ОДЕЖДА И ЭКИПИРОВКА",
+        nameEn: "[7] CLOTHING AND EQUIPMENT",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|7] Тек-вир (Techwear)", labelEn: "[1|7] Techwear", descRu: "Увеличенная куртка в стиле тек-вир, множественные тактические ремни, грузовые карманы, водонепроницаемый матовый нейлон, асимметричный крой.", descEn: "Oversized techwear jacket, multiple tactical straps, cargo pockets, waterproof matte nylon fabric, asymmetric design" },
+            { labelRu: "[2|7] Кибер-ниндзя (Cyber ninja)", labelEn: "[2|7] Cyber ninja", descRu: "Облегающий костюм из карбона, светящиеся оптоволоконные линии, матовая чёрная композитная броня.", descEn: "Sleek tight-fitting carbon fiber stealth suit, glowing neon fiber-optic lines, matte black composite plating" },
+            { labelRu: "[3|7] Хром и латекс (Chrome & latex)", labelEn: "[3|7] Chrome & latex", descRu: "Футуристический доспех из высокоглянцевого хрома, отражающий нагрудник, чёрный латексный подкостюм.", descEn: "Futuristic high-gloss chrome body armor, reflective metallic breastplate, black liquid latex undersuit" },
+            { labelRu: "[4|7] Космический скафандр (Space suit)", labelEn: "[4|7] Space suit", descRu: "Объёмный футуристический скафандр, тяжёлые белые композитные ткани, золотистый отражающий визор, кислородные трубки.", descEn: "Bulky sci-fi astronaut spacesuit, heavy white composite fabrics, golden reflective visor, oxygen tubes" },
+            { labelRu: "[5|7] Корпорат будущего (Future corporate)", labelEn: "[5|7] Future corporate", descRu: "Острый футуристический деловой костюм с неоновой окантовкой, геометрические плечи, встроенные микро-светодиоды, гладкий сатин.", descEn: "Sharp futuristic neon-trimmed business suit, geometric shoulders, integrated micro-led elements, sleek satin" },
+            { labelRu: "[6|7] Кибер-хирург / Лаборант (Cybersurgeon)", labelEn: "[6|7] Cybersurgeon", descRu: "Стерильный высокотехнологичный длинный халат, бледные силиконовые ремни, прозрачный полимерный верх, умные ткани.", descEn: "Sterile high-tech long coat, pale silicone straps, transparent polymer overlay, smart fabrics" },
+            { labelRu: "[7|7] Рыцарские латы (Knight armor)", labelEn: "[7|7] Knight armor", descRu: "Тяжёлые потёртые стальные доспехи, гравированные мифологические орнаменты, кольчужные слои под низом, поцарапанный металл.", descEn: "Heavy battle-worn steel plate armor, engraved mythological ornaments, chainmail layers beneath, scratched metal" },
+            { labelRu: "[8|7] Мрачный маг / Некромант (Dark mage)", labelEn: "[8|7] Dark mage / Necromancer", descRu: "Многослойные рваные бархатные мантии, огромный капюшон, скрывающий лицо, рваный мистический шёлк.", descEn: "Layered tattered dark velvet robes, oversized hood shadowing the face, tattered mystical silk fabric" },
+            { labelRu: "[9|7] Лесной следопыт / Ассасин (Ranger)", labelEn: "[9|7] Ranger / Assassin", descRu: "Поношенная кожаная туника, плащ с капюшоном, пристёгнутые кинжалы, тёмно-зелёный холст и замша.", descEn: "Weathered leather tunic, hooded cloak, strapped daggers, dark green canvas and soft suede details" },
+            { labelRu: "[10|7] Королевская роскошь (Royal luxury)", labelEn: "[10|7] Royal luxury", descRu: "Роскошные королевские одежды, тяжёлая золотая вышивка, бархатный плащ королевского пурпурного цвета с отделкой из горностая.", descEn: "Opulent royal garments, heavy gold-embroidered brocade, royal purple velvet cloak with ermine fur trim" },
+            { labelRu: "[11|7] Варвар / Берсерк (Barbarian)", labelEn: "[11|7] Barbarian / Berserker", descRu: "Жилет из грубого меха, тяжёлые кожаные ремни, железные заклёпки, рваные льняные штаны.", descEn: "Rugged raw fur hide pelt vest, heavy leather straps, iron rivets, tattered coarse linen trousers" },
+            { labelRu: "[12|7] Эльфийский доспех (Elven armor)", labelEn: "[12|7] Elven armor", descRu: "Элегантная филигранная мифриловая броня, органические листовидные серебряные пластины, ниспадающий изумрудный шёлковый плащ.", descEn: "Elegant filigree mithril armor, organic leaf-shaped silver plates, flowing emerald silk cape" },
+            { labelRu: "[13|7] Подиумный оверсайз (Avant-garde oversized)", labelEn: "[13|7] Avant-garde oversized", descRu: "Авангардное пуховое пальто увеличенного объёма, асимметричный крой, высокомодные тяжёлые хлопковые драпировки.", descEn: "Avant-garde oversized puffer coat, asymmetrical tailoring, high-fashion heavy cotton drapes" },
+            { labelRu: "[14|7] Уличный кэжуал (Street casual)", labelEn: "[14|7] Street casual", descRu: "Классическая джинсовая куртка, потёртая белая хлопковая футболка, потёртые синие джинсы, минималистичный уличный стиль.", descEn: "Classic heavy denim jacket, worn white cotton t-shirt, distressed blue jeans, minimalist street style" },
+            { labelRu: "[15|7] Кожаный рокер / Байкер (Leather biker)", labelEn: "[15|7] Leather biker", descRu: "Потёртая чёрная кожаная байкерская куртка, металлические молнии, серебряные заклёпки, тёмные плотные джинсы.", descEn: "Distressed black leather motorcycle jacket, metal zippers, silver studs, dark heavy cotton jeans" },
+            { labelRu: "[16|7] Деловой костюм (Business suit)", labelEn: "[16|7] Business suit", descRu: "Сшитый на заказ трёхкомпонентный смокинг, шерсть премиум-класса, белая хлопковая рубашка, шёлковый галстук.", descEn: "Bespoke three-piece tailored tuxedo, premium wool fabric, crisp white cotton shirt, silk tie" },
+            { labelRu: "[17|7] Спортивный минимализм (Sport minimalism)", labelEn: "[17|7] Sport minimalism", descRu: "Современная спортивная одежда, компрессионные высокотехнологичные ткани, минималистичные матовые текстуры, бесшовный дизайн.", descEn: "Sleek modern athletic sportswear, compression tech-fabrics, minimalist matte textures, seamless design" },
+            { labelRu: "[18|7] Милитари / Тактика (Military tactical)", labelEn: "[18|7] Military tactical", descRu: "Военная форма, тактическая куртка в камуфляже, тяжёлый баллистический нейлон, подсумки.", descEn: "Military combat uniform, tactical camouflage BDU jacket, heavy ballistic nylon vest, utility pouches" },
+            { labelRu: "[19|7] Выживший в пустоши (Wasteland survivor)", labelEn: "[19|7] Wasteland survivor", descRu: "Постапокалиптическая куртка из обрезков кожи, металлические наплечники, обмотанные грязные бинты, рваный холст.", descEn: "Post-apocalyptic scavenged leather jacket, metal shoulder pads, wrapped dirty bandages, tattered canvas" },
+            { labelRu: "[20|7] Пустынный странник (Desert wanderer)", labelEn: "[20|7] Desert wanderer", descRu: "Тяжёлые выбеленные льняные драпировки, обёрнутый шарф на лице, пыльные защитные очки, рваные холщовые слои.", descEn: "Heavy sun-bleached linen drapes, wrapped face scarf, dusty protective goggles, ragged canvas layers" },
+            { labelRu: "[21|7] Стимпанк-инженер (Steampunk engineer)", labelEn: "[21|7] Steampunk engineer", descRu: "Корсет из викторианской кожи, латунные шестерёнки, белая льняная рубашка с жабо, тяжёлые коричневые замшевые брюки.", descEn: "Victorian leather corset vest, brass gear ornaments, white linen ruffled shirt, heavy brown suede trousers" },
+            { labelRu: "[22|7] Мусорный шик (Scrap armor)", labelEn: "[22|7] Scrap armor", descRu: "Самодельная броня из номерных знаков и покрышек, обмотанная толстой медной проволокой поверх тряпок.", descEn: "Makeshift armor made of license plates and scrap metal tires, bound with thick copper wire over rags" },
+            { labelRu: "[23|7] Сектант / Пророк (Cultist)", labelEn: "[23|7] Cultist / Prophet", descRu: "Рваная грубая мешковина, верёвочный пояс, ткань, пропитанная пеплом, оккультная символика.", descEn: "Tattered coarse burlap cowl robe, rope belt, ash-stained fabric, occult symbolic embroidery" },
+            { labelRu: "[24|7] Учёный-биохазард (Biohazard scientist)", labelEn: "[24|7] Biohazard scientist", descRu: "Ярко-жёлтый защитный костюм, текстура резинированного винила, встроенные фильтры противогаза, тяжёлые уплотнения.", descEn: "Bright yellow hazmat protective suit, rubberized vinyl texture, integrated gas mask filters, heavy seals" },
+            { labelRu: "[25|7] Жидкое золото (Liquid gold)", labelEn: "[25|7] Liquid gold", descRu: "Сюрреалистическое авангардное платье из расплавленного жидкого золота, высокоглянцевые текучие металлические отражения.", descEn: "Surreal avant-garde dress made of molten liquid gold, high-gloss flowing metallic reflections" },
+            { labelRu: "[26|7] Стеклянный концепт (Glass concept)", labelEn: "[26|7] Glass concept", descRu: "Авангардный доспех из осколков кристаллического стекла, острые полупрозрачные призматические пластины.", descEn: "Avant-garde armor made of shattered crystalline glass fragments, sharp translucent prismatic plates" },
+            { labelRu: "[27|7] Бумажный оригами-костюм (Origami paper)", labelEn: "[27|7] Origami paper", descRu: "Архитектурное геометрическое платье из сложенной острой белой бумаги, сложные слои оригами.", descEn: "Architectural geometric dress made of folded sharp white paper, complex origami layers" },
+            { labelRu: "[28|7] Жидкая тьма (Liquid darkness)", labelEn: "[28|7] Liquid darkness", descRu: "Таинственный костюм из колышущихся теней, ультра-матовая ткань-пустота, не отражающая свет, дымчатые края.", descEn: "Mysterious suit made of shifting shadows, ultra-matte void fabric capturing no light, smoke edges" },
+            { labelRu: "[29|7] Кристаллическая мантия (Crystal mantle)", labelEn: "[29|7] Crystal mantle", descRu: "Высокомодная мантия, покрытая сырыми кристаллами аметиста, сверкающие минеральные грани.", descEn: "High-fashion cape covered in raw amethyst crystal formations, glittering mineral facets" },
+            { labelRu: "[30|7] Театральный кутюр (Theatrical couture)", labelEn: "[30|7] Theatrical couture", descRu: "Драматичное объёмное красное шёлковое платье, каскадные слои тюля, преувеличенные плечи.", descEn: "Dramatic voluminous red silk gown, cascading layers of tulle, exaggerated architectural shoulders" }
+        ]
+    },
+    {
+        nameRu: "[8] ПОЗА И ДИНАМИКА",
+        nameEn: "[8] POSTURE AND DYNAMICS",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|8] Героическое приземление (Superhero landing)", labelEn: "[1|8] Superhero landing", descRu: "Эпичный полуприсед после прыжка, одна рука опирается о землю, под ним трескается пол. Динамичная посадка супергероя.", descEn: "epic superhero landing pose, crouching on one knee, one hand punching the ground, dynamic cracked floor effect" },
+            { labelRu: "[2|8] Властный триумф (Leader)", labelEn: "[2|8] Leader", descRu: "Стоит прямо, ноги на ширине плеч, руки уверенно скрещены на груди, голова слегка приподнята, взгляд свысока. Властная лидерская поза.", descEn: "powerful heroic stance, arms crossed confidently over the chest, legs apart, standing tall, looking down with pride" },
+            { labelRu: "[3|8] Хранитель меча (Barbarian)", labelEn: "[3|8] Barbarian", descRu: "Стоит прямо, обе руки лежат на рукояти тяжёлого меча, опущенного остриём в пол перед собой. Поза воина-хранителя.", descEn: "epic warrior pose, leaning forward with both hands resting on the hilt of a massive sword planted vertically into the ground" },
+            { labelRu: "[4|8] Шаг вперёд (Battle call)", labelEn: "[4|8] Battle call", descRu: "Динамичный шаг на камеру, одна нога впереди, тело развёрнуто вполоборота, рука манит за собой. Призыв к бою.", descEn: "dynamic forward action stride, stepping towards the camera, one leg forward, body in three-quarter view, beckoning gesture" },
+            { labelRu: "[5|8] Взлет (Levitation)", labelEn: "[5|8] Levitation", descRu: "Плавно парит в нескольких сантиметрах от пола, ноги вытянуты вниз, руки раскинуты в стороны, плащ развевается. Мистическая поза парения.", descEn: "mystical levitation pose, hovering inches above the ground, toes pointed down, arms spread wide, flowing cape" },
+            { labelRu: "[6|8] Тронный правитель (Ruler)", labelEn: "[6|8] Ruler", descRu: "Сидит в величественной, расслабленной, но грозной позе на массивном стуле/троне, локти на подлокотниках, пальцы сомкнуты замком.", descEn: "majestic ruler sitting on a massive throne, relaxed yet commanding posture, elbows on armrests, fingers interlaced" },
+            { labelRu: "[7|8] Атака в прыжке (Leap attack)", labelEn: "[7|8] Leap attack", descRu: "Застыл в воздухе в момент прыжка вперёд, замахнувшись оружием или кулаком для сокрушительного удара. Динамика боевого прыжка.", descEn: "mid-air dynamic leap attack, frozen mid-jump, swinging weapon forward, aggressive combat physics" },
+            { labelRu: "[8|8] Боевая стойка (Close combat)", labelEn: "[8|8] Close combat", descRu: "Низкая стойка, колени согнуты, тело сгруппировано, кулаки подняты на уровне лица для защиты, готовность к рывку.", descEn: "low martial arts combat stance, knees bent, body compact, fists raised guarding the face, ready to strike" },
+            { labelRu: "[9|8] На прицеле (Sniper)", labelEn: "[9|8] Sniper", descRu: "Целится из оружия (лук/винтовка) прямо в объектив камеры, один глаз прищурен, тело вытянуто в линию. Поза снайпера/стрелка.", descEn: "aiming ranged weapon directly into the camera lens, one eye squinting, tense focused body alignment, sniper posture" },
+            { labelRu: "[10|8] Обнажение клинка (Ninja)", labelEn: "[10|8] Ninja", descRu: "Застыл в полуприседе, корпус наклонён вперёд, одна рука держит ножны на поясе, вторая резко выхватывает светящееся лезвие. Поза иайдо.", descEn: "iaido swordsman stance, crouching forward, one hand holding the scabbard, the other hand rapidly drawing a katana" },
+            { labelRu: "[11|8] Удар с разворота (Spin kick)", labelEn: "[11|8] Spin kick", descRu: "Динамичный кадр в момент кругового удара ногой, тело закручено по спирали, опорная нога балансирует.", descEn: "high-speed martial arts spin kick, body twisted in spiral motion, dynamic trailing action effect" },
+            { labelRu: "[12|8] Стрельба с двух рук (Akimbo)", labelEn: "[12|8] Akimbo", descRu: "Идёт вперёд, руки раскинуты в стороны крестом, из обеих рук ведётся огонь. Эффект боевика.", descEn: "dual-wielding gun akimbo pose, walking forward, arms extended outwards in cross-fire position, muzzle flashes" },
+            { labelRu: "[13|8] Из тени (Lurking)", labelEn: "[13|8] Lurking", descRu: "Низкий присед на корточках, корпус прижат к колену, голова опущена, взгляд из-под капюшона исподлобья. Скрытная поза ассасина.", descEn: "stealthy low crouch, body pressed tight to the ground, head tilted down, sinister look from under a hood" },
+            { labelRu: "[14|8] Плетение заклинания (Spellcasting)", labelEn: "[14|8] Spellcasting", descRu: "Одна рука вытянута вперёд, пальцы растопырены и объяты магической энергией, вторая рука отведена назад для баланса. Поза мага.", descEn: "spellcasting wizard pose, one hand extended forward channeling glowing magical energy, fingers splayed, dynamic aura" },
+            { labelRu: "[15|8] Коварная ухмылка (Devious)", labelEn: "[15|8] Devious", descRu: "Тело развёрнуто боком к камере, голова повернута через плечо, рука касается подбородка, хитрый взгляд. Поза злодея.", descEn: "devious villain pose, body angled away, head turned over the shoulder looking at camera, hand touching chin, sly smirk" },
+            { labelRu: "[16|8] Шаг в портал (Walking away)", labelEn: "[16|8] Walking away", descRu: "Спиной к зрителю делает шаг вглубь сцены, голова слегка повернута назад, как бы приглашая идти следом. Уход в глубину.", descEn: "walking away into the depth, back turned to the camera, head slightly tilted backward, inviting gesture" },
+            { labelRu: "[17|8] Хладнокровный убийца (Cold-blooded)", labelEn: "[17|8] Cold-blooded", descRu: "Абсолютно статичная, ровная поза, руки опущены вдоль тела, в одной руке зажато капающее оружие, леденящий спокойный взгляд.", descEn: "cold-blooded assassin stance, perfectly still posture, arms resting at sides, holding a weapon, intense deadpan stare" },
+            { labelRu: "[18|8] Безумный шут (Crazy jester)", labelEn: "[18|8] Crazy jester", descRu: "Асимметричная, ломаная поза, голова сильно завалена набок, руки раскинуты в неестественном приветствии, дикая улыбка.", descEn: "crazy jester pose, asymmetrical unbalanced posture, head tilted sharply to the side, erratic wide arms gesture" },
+            { labelRu: "[19|8] Руки в карманах (Slouch)", labelEn: "[19|8] Slouch", descRu: "Расслабленная стойка, вес перенесён на одну ногу, руки глубоко в карманах куртки/брюк, плечи опущены. Пофигистичный стрит-стайл.", descEn: "relaxed street style lean, weight on one leg, hands buried deep in pockets, slouched confident shoulders" },
+            { labelRu: "[20|8] Проверка кибер-руки (Inspecting gadget)", labelEn: "[20|8] Inspecting gadget", descRu: "Стоит полубоком, подняв одну руку перед лицом и внимательно рассматривая свои пальцы/перчатку/гаджет. Тех-эстетика.", descEn: "inspected gadget pose, looking closely at own extended hand, studying cybernetic glove, tech-wear aesthetic" },
+            { labelRu: "[21|8] Посадка на корты (Street crouch)", labelEn: "[21|8] Street crouch", descRu: "Классическая расслабленная посадка на корточках, локти лежат на коленях, дерзкий взгляд в камеру. Уличная поза.", descEn: "urban street crouch, sitting on haunches, elbows resting on knees, casual confident gaze directly at camera" },
+            { labelRu: "[22|8] Фэшн-излом (Avant-garde model)", labelEn: "[22|8] Avant-garde model", descRu: "Высокохудожественная, ломаная поза с подиума: одна рука на талии, бедро резко уведено в сторону, плечо приподнято.", descEn: "high-fashion avant-garde model pose, hand on hip, dramatic angular body silhouette, sharp runway posture" },
+            { labelRu: "[23|8] Поправка очков / Шлема (Adjusting visor)", labelEn: "[23|8] Adjusting visor", descRu: "Одна рука изящно касается края очков, визора или шлема на голове, фиксируя элемент экипировки.", descEn: "adjusting visor pose, one hand touching the edge of sunglasses or helmet on head, sharp focused action look" },
+            { labelRu: "[24|8] Упор на стену (Leaning)", labelEn: "[24|8] Leaning", descRu: "Расслабленно прислонился спиной или плечом к элементу ближнего плана (стене), одна нога согнута и упирается в неё же.", descEn: "leaning casually against a wall, back touching the surface, one knee bent with foot resting against the wall" },
+            { labelRu: "[25|8] Усталый сталкер (Exhausted survivor)", labelEn: "[25|8] Exhausted survivor", descRu: "Тяжёлая, измождённая поза, персонаж опирается обеими руками на колени, голова опущена, тяжелое дыхание.", descEn: "exhausted survivor pose, bent forward resting both hands on knees, heavily slouched shoulders, gasping for air" },
+            { labelRu: "[26|8] Защита от солнца (Scout)", labelEn: "[26|8] Scout", descRu: "Одна рука приставлена козырьком ко лбу, персонаж вглядывается вдаль, корпус слегка наклонён вперёд. Разведчик.", descEn: "scout looking into distance, shading eyes with one hand over forehead, leaning forward peering into horizon" },
+            { labelRu: "[27|8] Звериный оскал (Feral beast)", labelEn: "[27|8] Feral beast", descRu: "Низкая получетверенька, одна рука на полу, пальцы согнуты как когти, тело напряжено как пружина перед броском. Дикарская поза.", descEn: "feral beast-like posture, crouching low on all fours, one hand clawing the ground, tense ready-to-spring body" },
+            { labelRu: "[28|8] Раненый боец (Injured warrior)", labelEn: "[28|8] Injured warrior", descRu: "Держится одной рукой за бок или плечо, тело слегка перекошено от боли, но взгляд остаётся непокорным.", descEn: "injured warrior posture, clutching shoulder in pain, asymmetrical limping stance, defiant unbroken expression" },
+            { labelRu: "[29|8] Молитва / Медитация (Meditation)", labelEn: "[29|8] Meditation", descRu: "Сидит со скрещенными ногами (поза лотоса) или стоит на коленях, ладони сомкнуты перед грудью, глаза закрыты. Умиротворение.", descEn: "monastic meditation pose, sitting cross-legged in lotus position, hands clasped together, serene tranquil energy" },
+            { labelRu: "[30|8] Всплеск безумия (Desperate scream)", labelEn: "[30|8] Desperate scream", descRu: "Руки вцеплены в собственные волосы/голову, спина изогнута дугой, лицо запрокинуто вверх в крике. Отчаянная драматическая поза.", descEn: "desperate dramatic pose, hands clutching own head, body arched back, face tilted up shouting at the sky" }
+        ]
+    },
+    {
+        nameRu: "[9] ПРИЧЕСКА И ВОЛОСЫ",
+        nameEn: "[9] HAIRSTYLE AND HAIR",
+        marquee: true,
+        presets: [
+            { labelRu: "[1|9] Андеркат с выбритыми узорами (Undercut patterns)", labelEn: "[1|9] Undercut patterns", descRu: "Футуристическая стрижка андеркат, выбритые виски с геометрическими неоновыми узорами, длинная гладкая верхняя часть, зачёсанная назад.", descEn: "futuristic undercut hairstyle, shaved sides with geometric neon cyber-patterns, long sleek top swept back" },
+            { labelRu: "[2|9] Кибер-дреды (Cyber dreads)", labelEn: "[2|9] Cyber dreads", descRu: "Киберпанк-дреды, толстые текстурные локоны со встроенными светящимися оптоволоконными кабелями и неоновыми проводами.", descEn: "cyberpunk dreadlocks, thick textured locks with integrated glowing fiber-optic cables and neon wires" },
+            { labelRu: "[3|9] Асимметричное каре (Asymmetrical bob)", labelEn: "[3|9] Asymmetrical bob", descRu: "Резкое асимметричное каре, бритвенно-острые края, гладкая блестящая синтетическая текстура.", descEn: "sharp asymmetrical bob haircut, razor-cut edges, sleek reflective high-gloss synthetic texture" },
+            { labelRu: "[4|9] Неоновый ирокез (Neon mohawk)", labelEn: "[4|9] Neon mohawk", descRu: "Экстремальный панк-ирокез, колючая текстура, яркая неоновая окраска, высококонтрастное освещение.", descEn: "edgy punk mohawk, spiked textured hair, vibrant neon color grading, high contrast lighting" },
+            { labelRu: "[5|9] Гладкий футуристический хвост (Sleek ponytail)", labelEn: "[5|9] Sleek ponytail", descRu: "Ультра-гладкий высокий хвост, закреплённый металлическим хромированным кольцом, идеально прямые ниспадающие волосы.", descEn: "ultra-sleek high ponytail, secured with a metallic chrome ring, perfectly straight hair streaming down" },
+            { labelRu: "[6|9] Голографический пикси (Holographic pixie)", labelEn: "[6|9] Holographic pixie", descRu: "Короткая рваная стрижка пикси, небрежные текстурированные слои, голографический переливающийся цвет, меняющийся на свету.", descEn: "short choppy pixie cut, messy textured layers, holographic iridescent color shifts shifting in light" },
+            { labelRu: "[7|9] Эльфийские косы (Elven braids)", labelEn: "[7|9] Elven braids", descRu: "Длинные ниспадающие серебристо-белые волосы, замысловатые эльфийские косы по бокам, полу-собранная корона на макушке.", descEn: "long flowing silver-white hair, intricate elven braids on the sides, half-up half-down crown styling" },
+            { labelRu: "[8|9] Растрёпанные косы викинга (Viking braids)", labelEn: "[8|9] Viking braids", descRu: "Суровые норвежские воинские косы, несколько толстых небрежных кос, выбритые виски, состаренная текстура.", descEn: "rugged Norse warrior hairstyle, multiple thick messy braids, shaved sides, weathered and textured" },
+            { labelRu: "[9|9] Растрёпанный пучок мага (Messy top knot)", labelEn: "[9|9] Messy top knot", descRu: "Небрежный растрёпанный пучок на макушке, свободные пряди, обрамляющие лицо, мудрая волшебная эстетика, взлохмаченные ветром волосы.", descEn: "disheveled messy top knot, loose strands framing the face, wise wizard style, wind-blown hair" },
+            { labelRu: "[10|9] Бесконечные локоны (Endless curls)", labelEn: "[10|9] Endless curls", descRu: "Экстравагантные очень длинные волнистые волосы, ниспадающие ниже пояса, густые объёмные средневековые локоны.", descEn: "extravagant ultra-long wavy hair cascading down below the waist, thick voluminous medieval curls" },
+            { labelRu: "[11|9] Королевская коса-корона (Regal crown braid)", labelEn: "[11|9] Regal crown braid", descRu: "Величественная корона из кос, тугое замысловатое плетение вокруг головы, элегантный и величественный вид.", descEn: "regal braided crown hairstyle, tight intricate weaving around the head, elegant and majestic look" },
+            { labelRu: "[12|9] Ветреный плащ из волос (Wild windblown)", labelEn: "[12|9] Wild windblown", descRu: "Дикие необузданные волосы, агрессивно развевающиеся на ветру, динамичные растрёпанные пряди, создающие ощущение движения.", descEn: "wild untamed hair blowing aggressively in the wind, dynamic messy strands creating a sense of motion" },
+            { labelRu: "[13|9] Текстурированный кроп (Textured crop)", labelEn: "[13|9] Textured crop", descRu: "Современная текстурированная стрижка кроп, короткие выбритые виски, небрежная укладка на макушке, реалистичные пряди.", descEn: "modern textured crop haircut, short faded sides, messy definition on top, realistic hair strands" },
+            { labelRu: "[14|9] Классический Помпадур (Classic pompadour)", labelEn: "[14|9] Classic pompadour", descRu: "Классическая стрижка помпадур, объёмный высокий зачёс, аккуратно причёсанный ретро-современный вид.", descEn: "classic pompadour hairstyle, voluminous high-top sweep, neatly combed retro-modern look" },
+            { labelRu: "[15|9] Голливудская волна (Hollywood waves)", labelEn: "[15|9] Hollywood waves", descRu: "Элегантные винтажные голливудские волны, зачёсанные набок, гладкая глянцевая текстура, роскошные глубокие локоны с пробором.", descEn: "elegant vintage Hollywood side-swept waves, smooth glossy texture, luxurious deep parted curls" },
+            { labelRu: "[16|9] Неряшливый пучок (Messy bun)", labelEn: "[16|9] Messy bun", descRu: "Небрежный пучок на макушке, свободные пряди, естественно обрамляющие шею и лицо.", descEn: "casual messy bun on top of the head, loose strands naturally framing the neck and face" },
+            { labelRu: "[17|9] Афро-кудри (Afro curls)", labelEn: "[17|9] Afro curls", descRu: "Объёмная натуральная афро-причёска, тугие спиральные курчавые пряди, идеально круглая форма.", descEn: "voluminous natural afro hairstyle, tight coily kinky hair texture, perfectly shaped round silhouette" },
+            { labelRu: "[18|9] Длинные серф-волны (Surf waves)", labelEn: "[18|9] Surf waves", descRu: "Расслабленные пляжные волны до плеч, небрежная спутанная текстура, естественные мелированные пряди.", descEn: "relaxed shoulder-length beach waves, messy tousled hair texture, natural highlights" },
+            { labelRu: "[19|9] Острые аниме-пряди (Anime spikes)", labelEn: "[19|9] Anime spikes", descRu: "Стилизованные аниме-острые пряди, крупные чёткие геометрические пучки, высококонтрастные цел-шейдинговые блики.", descEn: "stylized anime spiky hair, sharp chunky geometric tufts, high contrast cel-shaded highlights" },
+            { labelRu: "[20|9] Два высоких хвоста (Twin-tails)", labelEn: "[20|9] Twin-tails", descRu: "Драматичные высокие двойные хвосты, объёмные длинные пряди, обрамляющие лицо с двух сторон, игривый вид.", descEn: "dramatic high twin-tails, voluminous long pigtails framing both sides of the face, playful look" },
+            { labelRu: "[21|9] Жидкий металл (Liquid metal)", labelEn: "[21|9] Liquid metal", descRu: "Сюрреалистическая авангардная причёска из расплавленного текучего хрома, металлическая жидкая текстура, отражающая окружение.", descEn: "surreal avant-garde hairstyle made of molten flowing chrome, metallic liquid texture reflecting environment" },
+            { labelRu: "[22|9] Кристаллические волосы (Crystal shards)", labelEn: "[22|9] Crystal shards", descRu: "Абстрактные волосы из острых полупрозрачных кварцевых осколков, геометрические кристаллические грани, преломляющие свет.", descEn: "abstract hair made of sharp translucent quartz crystal shards, geometric crystalline facets reflecting light" },
+            { labelRu: "[23|9] Скульптурное оригами (Origami sculpture)", labelEn: "[23|9] Origami sculpture", descRu: "Архитектурная геометрическая причёска из сложенных острых бумажных форм, авангардный подиумный образ.", descEn: "architectural geometric hair style made of folded sharp paper shapes, avant-garde runway look" },
+            { labelRu: "[24|9] Сгусток дыма (Smoke tendrils)", labelEn: "[24|9] Smoke tendrils", descRu: "Сюрреалистические волосы из клубящегося тёмного дыма, эфирные парящие пряди, растворяющиеся на краях.", descEn: "surreal hair made of shifting dark smoke, ethereal vaporous strands dissolving at the edges" },
+            { labelRu: "[25|9] Армейский бокс (Buzzcut)", labelEn: "[25|9] Buzzcut", descRu: "Ультра-короткая военная стрижка, чисто бритая голова, тонкая текстура щетины, острый аккуратный край роста волос.", descEn: "ultra-short military buzzcut, clean shaved head, subtle stubble texture, sharp clean hairline" },
+            { labelRu: "[26|9] Сликбэк (Slicked back)", labelEn: "[26|9] Slicked back", descRu: "Гладкие зализыванные назад волосы, тёмная высокоглянцевая текстура помады, острый мужественный профиль.", descEn: "sleek wet-look slicked-back hair, dark high-gloss pomade texture, sharp masculine profile" },
+            { labelRu: "[27|9] Спутавшиеся пряди сталкера (Matted stalker)", labelEn: "[27|9] Matted stalker", descRu: "Спутанные сальные волосы, грязные нечёсаные пряди, реалистичная пыльная текстура, дикий взгляд.", descEn: "matted greasy hair, dirty unkempt strands, realistic dust and gritty texture, wild look" },
+            { labelRu: "[28|9] Полная лысина (Bald)", labelEn: "[28|9] Bald", descRu: "Полностью бритая голова, гладкая чистая кожа, мягкие блики, отражающие студийный свет сверху.", descEn: "completely bald head, smooth clean skin, subtle soft highlights reflecting overhead studio lights" },
+            { labelRu: "[29|9] Седые пряди времени (Gray streaks)", labelEn: "[29|9] Gray streaks", descRu: "Состаренные грубые седые волосы, залысины, толстая реалистичная текстура, показывающая возраст и мудрость.", descEn: "distressed coarse gray hair, receding hairline, thick realistic texture showing age and wisdom" },
+            { labelRu: "[30|9] Закрывающий лицо занавес (Hanging curtain)", labelEn: "[30|9] Hanging curtain", descRu: "Длинные мокрые спутанные пряди, свисающие вперёд, полностью затеняющие лицо, эстетика фильмов ужасов.", descEn: "long wet stringy hair hanging forward, completely shadowing the face, creepy horror movie aesthetic" }
+            ]
+        }
+        // Добавляйте другие категории, обязательно указывая nameEn с номером, например "[2] РАКУРС" → "[2] ANGLE"
+    ];
+
+    // ======================= ВОССТАНОВЛЕННАЯ ФУНКЦИЯ getLocalizedPrompt =======================
+    function getLocalizedPrompt() {
+        const character = characterInput.value.trim();
+        const gender = genderInput.value.trim();
+        const race = raceInput.value.trim();
+        const scene = sceneInput.value.trim();
+        const isRu = currentLang === 'ru';
+
+        let prompt = "";
+        if (isRu) {
+            prompt += "Ниже представлены параметры персонажа, выбранные пользователем в конструкторе.\n\n";
+            prompt += "[ОСНОВНОЕ ЦЕЛЕВОЕ ДЕЙСТВИЕ]: Сгенерируй ОДНО финальное высококачественное изображение персонажа в сценическом окружении, строго следуя пошаговому порядку действий и правилам совместимости предоставленных данных ниже.\n\n";
+            prompt += "[ПОРЯДОК ДЕЙСТВИЙ ДЛЯ НЕЙРОСЕТИ]:\n";
+            prompt += "- Проанализируй категорию [1] СТИЛЬ. Если он нереалистичный (аниме, комикс, арт), рисуй в этой графике. Если стиль реалистичный, создай кинематографичную фотографию.\n";
+            prompt += "- Оцени категорию [5] РАКУРС. Нарисуй персонажа и окружение в указанной крупности и перспективе.\n";
+            prompt += "- Детализируй персонажа: его архетип, пол, а также категории [9] ПРИЧЕСКА И ВОЛОСЫ, [7] ОДЕЖДА И ЭКИПИРОВКА и РАСА.\n";
+            prompt += "- Отрендери позу и телодвижения на основе категории [8] ПОЗА И ДИНАМИКА.\n";
+            prompt += "- Выстрой окружение по слоям, используя категории [2] БАЗОВАЯ ПЛОСКОСТЬ, [3] БЛИЖНИЙ ПЛАН и [4] ДАЛЬНИЙ ПЛАН.\n";
+            prompt += "- Наложи финальную атмосферу на основе категории [6] СВЕТ И ЦВЕТ.\n\n";
+            prompt += "[ЖЕСТКИЕ ПРАВИЛА СОВМЕСТИМОСТИ]:\n";
+            prompt += "- Если в категории [5] РАКУРС выбран КРУПНЫЙ ПЛАН (Close-Up / Portrait), полностью ИГНОРИРУЙ категорию [2] БАЗОВАЯ ПЛОСКОСТЬ и нижнюю часть одежды из категории [7]. Нарисуй только лицо и плечи. При этом категорию [4] ДАЛЬНИЙ ПЛАН размывай в мягкое боке (bokeh blur), полностью убирая крупные объекты фона.\n";
+            prompt += "- Если в категории [7] ОДЕЖДА И ЭКИПИРОВКА выбран закрытый шлем, скафандр или глубокий капюшон, полностью СКРОЙ категорию [9] ПРИЧЕСКА И ВОЛОСЫ (hair hidden inside). Волосы не должны просвечивать сквозь шлем или капюшон.\n";
+            prompt += "- Если в категории [1] СТИЛЬ выбран рисованный стиль (аниме, комикс, вектор), полностью ИСКЛЮЧИ фотореализм из изображения. Сделай упор на четкие линии (lineart) и сочные цвета. Если стиль — фото, сделай картинку неотличимой от кадра из реального фильма.\n\n";
+            prompt += "[ВХОДЯЩИЕ ДАННЫЕ ДЛЯ ГЕНЕРАЦИИ]:\n";
+        } else {
+            prompt += "Below are the character parameters selected by the user in the constructor.\n\n";
+            prompt += "[MAIN TARGET ACTION]: Generate ONE final high-quality image of the character in a stage environment, strictly following the step-by-step procedure and data compatibility rules below.\n\n";
+            prompt += "[PROCEDURE FOR THE AI]:\n";
+            prompt += "- Analyze category [1] STYLE. If it is non-realistic (anime, comic, art), render in that style. If realistic, create a cinematic photograph.\n";
+            prompt += "- Evaluate category [5] ANGLE. Draw the character and environment according to the specified framing and perspective.\n";
+            prompt += "- Detail the character: archetype, gender, as well as categories [9] HAIRSTYLE AND HAIR, [7] CLOTHING AND EQUIPMENT, and RACE.\n";
+            prompt += "- Render pose and movement based on category [8] POSTURE AND DYNAMICS.\n";
+            prompt += "- Build the environment in layers using categories [2] BASE PLANE, [3] CLOSE SHOT, and [4] LONG SHOT.\n";
+            prompt += "- Apply the final atmosphere based on category [6] LIGHT AND COLOR.\n\n";
+            prompt += "[RIGID COMPATIBILITY RULES]:\n";
+            prompt += "- If category [5] ANGLE is set to CLOSE-UP (Close-Up / Portrait), completely IGNORE category [2] BASE PLANE and the lower part of clothing from category [7]. Draw only the face and shoulders. Meanwhile, blur category [4] LONG SHOT into soft bokeh blur, completely removing large background objects.\n";
+            prompt += "- If category [7] CLOTHING AND EQUIPMENT includes a closed helmet, spacesuit or deep hood, completely HIDE category [9] HAIRSTYLE AND HAIR (hair hidden inside). Hair must not show through the helmet or hood.\n";
+            prompt += "- If category [1] STYLE is a drawn style (anime, comic, vector), completely EXCLUDE photorealism from the image. Emphasize sharp lineart and vivid colors. If the style is photo, make the image indistinguishable from a real movie frame.\n\n";
+            prompt += "[INPUT DATA FOR GENERATION]:\n";
+        }
+
+        if (character) prompt += `- ${isRu ? 'ПЕРСОНАЖ' : 'CHARACTER'}: ${character}\n`;
+        if (gender) prompt += `- ${isRu ? 'ПОЛ' : 'GENDER'}: ${gender}\n`;
+        if (race) prompt += `- ${isRu ? 'РАСА' : 'RACE'}: ${race}\n`;
+        if (scene) prompt += `- ${isRu ? 'СЦЕНА' : 'SCENE'}: ${scene}\n`;
+
+// Перебираем все категории по порядку (все 9 штук)
+for (let i = 0; i < categoriesData.length; i++) {
+    const cat = categoriesData[i];
+    const selectedIdx = selected[i];
+    const catTitle = isRu ? cat.nameRu : cat.nameEn;
+
+    let description = '';
+    if (selectedIdx !== null && cat.presets[selectedIdx]) {
+        // Если выбран пресет – берём его описание
+        const preset = cat.presets[selectedIdx];
+        description = isRu ? preset.descRu : preset.descEn;
+    } else {
+        // Если пресет не выбран – ставим плейсхолдер
+        description = isRu ? 'НЕОБХОДИМО ЗАПОЛНИТЬ' : 'MUST BE FILLED';
+    }
+
+    prompt += `- ${catTitle}: ${description}\n`;
+}
+        prompt += "\n";
+
+        if (isRu) {
+            prompt += "[ЦЕЛЕВАЯ АУДИТОРИЯ]\n- Студенты и преподаватели Физтех-школы прикладной математики и информатики Московского физико-технического института, курс промпт-инженер, 3 поток, 2026 г.\n\n";
+            prompt += "[СИСТЕМНАЯ РОЛЬ И КВАЛИФИКАЦИЯ]\nТы — ведущий мировой концепт-художник, профессиональный создатель персонажей (Lead Character Concept Artist) и эксперт по кинематографической сценографии. Твой художественный почерк безупречен, ты обладаешь глубоким пониманием анатомии, дизайна костюмов, физики материалов (текстур) и законов сценического освещения, как на съемочной площадке блокбастеров или в ААА-играх.\n\n";
+            prompt += "[ТЕХНИЧЕСКИЙ ХВОСТ КАЧЕСТВА]: кинематографичное освещение, 8k, высокая детализация, мастерски скомпоновано.";
+        } else {
+            prompt += "[TARGET AUDIENCE]\n- Students and faculty of the Phystech School of Applied Mathematics and Informatics of the Moscow Institute of Physics and Technology, prompt engineering course, 3rd stream, 2026.\n\n";
+            prompt += "[SYSTEM ROLE & EXPERTISE]\nYou are a world-leading concept artist, a professional Lead Character Concept Artist, and an expert in cinematic scenography. Your artistic style is flawless; you have a deep understanding of anatomy, costume design, material physics (textures), and the laws of stage lighting, as on a blockbuster film set or in AAA games.\n\n";
+            prompt += "[TECHNICAL QUALITY TAIL]: cinematic lighting, 8k, highly detailed, masterfully composed.";
+        }
+        return prompt;
+    }
+
+    // ======================= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =======================
+    let selected = categoriesData.map(() => null);
+    let currentLang = 'ru';
+    let userEdited = false;
+
+    // DOM-элементы интерфейса
+    const mainTitle = document.getElementById('mainTitle');
+    const subTitle = document.getElementById('subTitle');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+    const copyBtn = document.getElementById('copyFinalBtn');
+    const translateBtn = document.getElementById('translateBtn');
+    const randomBtn = document.getElementById('randomBtn');
+
+    let characterInput, genderInput, raceInput, sceneInput;
+    let characterLabel, genderLabel, raceLabel, sceneLabel;
+    const container = document.getElementById('categoriesContainer');
+    const finalPromptElem = document.getElementById('finalPrompt');
+    const manualBadge = document.getElementById('manualEditBadge');
+
+    function getElements() {
+        characterInput = document.getElementById('characterInput');
+        genderInput = document.getElementById('genderInput');
+        raceInput = document.getElementById('raceInput');
+        sceneInput = document.getElementById('sceneInput');
+        characterLabel = document.getElementById('characterLabel');
+        genderLabel = document.getElementById('genderLabel');
+        raceLabel = document.getElementById('raceLabel');
+        sceneLabel = document.getElementById('sceneLabel');
+    }
+    getElements();
+
+    // Функция обновления цвета кнопки копирования
+    function updateCopyButtonState() {
+        const hasAnyPreset = selected.some(idx => idx !== null);
+        if (hasAnyPreset) {
+            copyBtn.classList.add('has-presets');
+        } else {
+            copyBtn.classList.remove('has-presets');
+        }
+    }
+
+    function updateFinalPromptFromData() {
+        if (!userEdited) {
+            finalPromptElem.value = getLocalizedPrompt();
+            finalPromptElem.classList.remove('edited');
+        }
+        updateCopyButtonState();
+    }
+// Блокировка UI в зависимости от выбранных пресетов и наличия адаптированного блока
+function updateUILockState() {
+    const hasSelectedPresets = selected.some(idx => idx !== null);
+    const finalText = finalPromptElem.value;
+    const hasAdaptedBlock = finalText.includes('<!--ADAPTED_START-->') && finalText.includes('<!--ADAPTED_END-->');
+
+    // 1. Кнопка "Декомпозиция" – активна только если нет выбранных пресетов
+    const assistantBtn = document.querySelector('.assistant-btn[data-target="generator"]');
+    if (assistantBtn) {
+        if (hasSelectedPresets) {
+            assistantBtn.classList.add('disabled');
+            assistantBtn.disabled = true;
+        } else {
+            assistantBtn.classList.remove('disabled');
+            assistantBtn.disabled = false;
+        }
+    }
+
+    // 2. Кнопка "Случайно" – блокируется, если есть адаптированный блок
+    if (randomBtn) {
+        randomBtn.disabled = hasAdaptedBlock;
+        if (hasAdaptedBlock) randomBtn.classList.add('disabled');
+        else randomBtn.classList.remove('disabled');
+    }
+
+    // 3. Кнопка "Сбросить всё" – НЕ БЛОКИРУЕТСЯ (удаляем любые изменения)
+    // resetAllBtn всегда активен
+
+    // 4. Все радиокнопки пресетов и кнопки сброса категорий – блокируются, если есть адаптированный блок
+    const allRadios = document.querySelectorAll('.preset-item input[type="radio"]');
+    const allResetCatBtns = document.querySelectorAll('.reset-cat');
+    
+    allRadios.forEach(radio => {
+        radio.disabled = hasAdaptedBlock;
+    });
+    allResetCatBtns.forEach(btn => {
+        btn.disabled = hasAdaptedBlock;
+        if (hasAdaptedBlock) btn.classList.add('disabled');
+        else btn.classList.remove('disabled');
+    });
+
+    // 5. Блокировка кликов по самим пресет-айтенам
+    const allPresetItems = document.querySelectorAll('.preset-item');
+    allPresetItems.forEach(item => {
+        if (hasAdaptedBlock) {
+            item.classList.add('disabled');
+            item.style.pointerEvents = 'none';
+        } else {
+            item.classList.remove('disabled');
+            item.style.pointerEvents = '';
+        }
+    });
+}
+
+    // ======================= ОБНОВЛЕНИЕ ИНТЕРФЕЙСА =======================
+    function updateUILanguage() {
+        const isRu = currentLang === 'ru';
+        mainTitle.textContent = isRu ? 'IDESI · ПРОМПТ-МОНСТР' : 'IDESI · PROMPT MONSTER';
+        subTitle.textContent = isRu ? 'текстовый конструктор' : 'text constructor';
+        saveBtn.textContent = isRu ? 'СОХРАНИТЬ' : 'SAVE';
+        resetAllBtn.textContent = isRu ? 'СБРОСИТЬ ВСЁ' : 'RESET ALL';
+        copyBtn.textContent = isRu ? 'КОПИРОВАТЬ' : 'COPY';
+        translateBtn.textContent = isRu ? 'English' : 'Русский';
+        if (randomBtn) randomBtn.textContent = isRu ? 'СЛУЧАЙНО' : 'RANDOM';
+        characterLabel.textContent = isRu ? 'ПЕРСОНАЖ (архетип)' : 'CHARACTER (archetype)';
+        genderLabel.textContent = isRu ? 'ПОЛ' : 'GENDER';
+        raceLabel.textContent = isRu ? 'РАСА' : 'RACE';
+        sceneLabel.textContent = isRu ? 'Сцена / ОКРУЖЕНИЕ' : 'Scene / ENVIRONMENT';
+        characterInput.placeholder = isRu ? ' архетип: маг/ воин/ изобретатель ' : ' archetype: mage/ warrior/ inventor ';
+        genderInput.placeholder = isRu ? ' мужской / женский / небинарный ' : ' male / female / non-binary ';
+        raceInput.placeholder = isRu ? ' азиат/ эльф/ орк/ дроу/ робот' : ' asian/ elf/ orc/ drow/ robot';
+        sceneInput.placeholder = isRu ? ' пишите всё на английском' : ' write everything in English';
+        
+        const assistantBtn = document.querySelector('.assistant-btn[data-target="generator"]');
+        if (assistantBtn) {
+            assistantBtn.textContent = isRu ? 'ДЕКОМПОЗИЦИЯ' : 'DECOMPOSITION';
+        }
+        const decompositionNote = document.getElementById('decompositionNote');
+        if (decompositionNote) {
+            const text = isRu ? decompositionNote.getAttribute('data-ru') : decompositionNote.getAttribute('data-en');
+            if (text) decompositionNote.textContent = text;
+        }
+        const editingHint = document.getElementById('editingHint');
+        if (editingHint) {
+            editingHint.textContent = isRu ? '| окно для редактирования' : '| editing window';
+        }
+        const assistantContent = document.getElementById('assistantContent');
+        if (assistantContent && assistantContent.style.display === 'block') {
+            const generatorContainer = assistantContent.querySelector('.generator-container');
+            if (generatorContainer) {
+                const label = generatorContainer.querySelector('label[for="presetDescription"]');
+                if (label) label.textContent = isRu ? 'текстовый запрос, который необходимо адаптировать' : 'text query to be adapted';
+                const textarea = generatorContainer.querySelector('#presetDescription');
+                if (textarea) textarea.placeholder = isRu ? 'это может быть любой готовый промпт или запрос своими словами, который необходимо адаптировать' : 'This could be any ready-made prompt or a request in your own words that needs to be adapted.';
+                const generateBtn = generatorContainer.querySelector('#generatePresetBtn');
+                if (generateBtn) generateBtn.textContent = isRu ? 'СТАРТ' : 'START';
+                const adaptedLabel = generatorContainer.querySelector('label[for="adaptedText"]');
+                if (adaptedLabel) adaptedLabel.textContent = isRu ? 'Результат декомпозиции (вставьте ответ нейросети):' : 'Decomposition result (paste the AI response):';
+                const adaptedTextarea = generatorContainer.querySelector('#adaptedText');
+                if (adaptedTextarea) adaptedTextarea.placeholder = isRu ? 'ответ языковой модели' : 'language model response';
+                const addBtn = generatorContainer.querySelector('#addToFinalBtn');
+                if (addBtn) addBtn.textContent = isRu ? 'ДОБАВИТЬ В ФИНАЛЬНЫЙ ПРОМПТ' : 'ADD TO FINAL PROMPT';
+            }
+        }
+    }
+
+    // ======================= ОБНОВЛЕНИЕ КНОПОК СБРОСА И LABEL =======================
+    function updateCategoryResetButton(catIdx) {
+        const catDiv = container.children[catIdx];
+        if (!catDiv) return;
+        const resetBtn = catDiv.querySelector('.reset-cat');
+        if (!resetBtn) return;
+        if (selected[catIdx] !== null) {
+            resetBtn.classList.add('active');
+        } else {
+            resetBtn.classList.remove('active');
+        }
+    }
+
+    function updateAllCategoryResetButtons() {
+        for (let i = 0; i < categoriesData.length; i++) {
+            updateCategoryResetButton(i);
+        }
+    }
+
+    function updateGlobalResetButton() {
+        const hasAnySelected = selected.some(idx => idx !== null);
+        if (hasAnySelected) {
+            resetAllBtn.classList.add('active');
+        } else {
+            resetAllBtn.classList.remove('active');
+        }
+    }
+
+    function updateLabelsFill() {
+        const labels = [
+            { input: characterInput, label: characterLabel },
+            { input: genderInput, label: genderLabel },
+            { input: raceInput, label: raceLabel },
+            { input: sceneInput, label: sceneLabel }
+        ];
+        labels.forEach(item => {
+            if (item.input && item.label) {
+                if (item.input.value.trim() !== '') {
+                    item.label.classList.add('filled');
+                } else {
+                    item.label.classList.remove('filled');
+                }
+            }
+        });
+    }
+
+    function updateManualBadge() {
+        const badge = document.getElementById('manualEditBadge');
+        if (badge) {
+            if (userEdited) {
+                badge.textContent = currentLang === 'ru' ? '✎ изменён' : '✎ edited';
+            } else {
+                badge.textContent = '';
+            }
+        }
+    }
+
+    // ======================= ПЕРЕКЛЮЧЕНИЕ ЯЗЫКА =======================
+    function switchLanguage() {
+        if (userEdited) {
+            const confirmChange = confirm("Переключение языка приведёт к потере правок. Продолжить?");
+            if (!confirmChange) return;
+            userEdited = false;
+            finalPromptElem.classList.remove('edited');
+            updateManualBadge();
+        }
+        const newLang = currentLang === 'ru' ? 'en' : 'ru';
+        currentLang = newLang;
+        updateUILanguage();
+        buildCategories();
+        updateFinalPromptFromData();
+        updateAllCategoryResetButtons();
+        updateGlobalResetButton();
+        updateLabelsFill();
+    }
+
+    // ======================= СБРОС =======================
+    function resetAll() {
+        characterInput.value = '';
+        genderInput.value = '';
+        raceInput.value = '';
+        sceneInput.value = '';
+        for (let i = 0; i < categoriesData.length; i++) selected[i] = null;
+        userEdited = false;
+        finalPromptElem.classList.remove('edited');
+        buildCategories();
+        updateFinalPromptFromData();
+        updateManualBadge();
+        updateAllCategoryResetButtons();
+        updateGlobalResetButton();
+        updateLabelsFill();
+    }
+
+    function resetCategory(catIdx) {
+        if (catIdx < 0 || catIdx >= categoriesData.length) return;
+        selected[catIdx] = null;
+        if (!userEdited) updateFinalPromptFromData();
+        const categoryDiv = container.children[catIdx];
+        if (categoryDiv) {
+            const items = categoryDiv.querySelectorAll('.preset-item');
+            items.forEach(item => item.classList.remove('selected'));
+            const radios = categoryDiv.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => radio.checked = false);
+        }
+        updateCategoryResetButton(catIdx);
+        updateGlobalResetButton();
+    }
+
+    // ======================= БЕГУЩАЯ СТРОКА =======================
+    function applyMarqueeToDescriptions() {
+        const allDesc = document.querySelectorAll('.preset-desc');
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        function processDesc(descEl, originalText) {
+            const containerWidth = descEl.clientWidth;
+            if (containerWidth === 0 && attempts < maxAttempts) {
+                attempts++;
+                setTimeout(() => processDesc(descEl, originalText), 50);
+                return;
+            }
+            const originalWhiteSpace = getComputedStyle(descEl).whiteSpace;
+            descEl.style.whiteSpace = 'nowrap';
+            const textWidth = descEl.scrollWidth;
+            descEl.style.whiteSpace = originalWhiteSpace;
+            if (textWidth > containerWidth && containerWidth > 0) {
+                const track = document.createElement('div');
+                track.className = 'marquee-track';
+                const contentSpan = document.createElement('div');
+                contentSpan.className = 'marquee-content';
+                contentSpan.textContent = originalText + '   ' + originalText;
+                const duration = Math.min(15, Math.max(4, originalText.length / 15));
+                contentSpan.style.animationDuration = `${duration}s`;
+                track.appendChild(contentSpan);
+                descEl.innerHTML = '';
+                descEl.appendChild(track);
+            } else {
+                descEl.innerHTML = originalText;
+            }
+        }
+
+        allDesc.forEach(descEl => {
+            if (descEl.querySelector('.marquee-track')) return;
+            const originalText = descEl.getAttribute('data-full-text');
+            if (!originalText) return;
+            attempts = 0;
+            processDesc(descEl, originalText);
+        });
+    }
+
+    // ======================= ПОСТРОЕНИЕ КАРТОЧЕК =======================
+    function buildCategories() {
+        if (!container) return;
+        container.innerHTML = '';
+        for (let catIdx = 0; catIdx < categoriesData.length; catIdx++) {
+            const cat = categoriesData[catIdx];
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category';
+            const header = document.createElement('div');
+            header.className = 'category-header';
+            const catTitle = currentLang === 'ru' ? cat.nameRu : cat.nameEn;
+            const resetText = currentLang === 'ru' ? 'Сбросить' : 'Reset';
+            header.innerHTML = `<h2>${catTitle}</h2><button class="reset-cat" data-cat="${catIdx}">${resetText}</button>`;
+            const listDiv = document.createElement('div');
+            listDiv.className = 'presets-list';
+            cat.presets.forEach((preset, presetIdx) => {
+                const presetItem = document.createElement('div');
+                presetItem.className = 'preset-item';
+                if (selected[catIdx] === presetIdx) presetItem.classList.add('selected');
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `cat_${catIdx}`;
+                radio.value = presetIdx;
+                radio.checked = (selected[catIdx] === presetIdx);
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'preset-info';
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'preset-label';
+                let labelText = preset.labelRu;
+                let descText = preset.descRu;
+                if (currentLang === 'en') {
+                    labelText = preset.labelEn || preset.labelRu;
+                    descText = preset.descEn || preset.descRu;
+                }
+                labelDiv.textContent = labelText;
+                const descDiv = document.createElement('div');
+                descDiv.className = 'preset-desc';
+                descDiv.textContent = descText;
+                descDiv.setAttribute('data-full-text', descText);
+                infoDiv.appendChild(labelDiv);
+                infoDiv.appendChild(descDiv);
+                presetItem.appendChild(radio);
+                presetItem.appendChild(infoDiv);
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        if (selected[catIdx] === presetIdx) {
+                            radio.checked = false;
+                            selected[catIdx] = null;
+                            presetItem.classList.remove('selected');
+                            if (!userEdited) updateFinalPromptFromData();
+                            updateCategoryResetButton(catIdx);
+                            updateGlobalResetButton();
+                            return;
+                        }
+                        const prevSelected = selected[catIdx];
+                        if (prevSelected !== null) {
+                            const prevItem = listDiv.querySelector(`.preset-item input[value="${prevSelected}"]`)?.closest('.preset-item');
+                            if (prevItem) prevItem.classList.remove('selected');
+                        }
+                        selected[catIdx] = presetIdx;
+                        presetItem.classList.add('selected');
+                        if (!userEdited) updateFinalPromptFromData();
+                        updateCategoryResetButton(catIdx);
+                        updateGlobalResetButton();
+                    } else {
+                        if (selected[catIdx] === presetIdx) {
+                            selected[catIdx] = null;
+                            presetItem.classList.remove('selected');
+                            if (!userEdited) updateFinalPromptFromData();
+                            updateCategoryResetButton(catIdx);
+                            updateGlobalResetButton();
+                        }
+                    }
+                });
+                presetItem.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'INPUT' && e.target.type === 'radio') return;
+                    radio.click();
+                });
+                listDiv.appendChild(presetItem);
+            });
+            catDiv.appendChild(header);
+            catDiv.appendChild(listDiv);
+            container.appendChild(catDiv);
+        }
+        setTimeout(() => {
+            applyMarqueeToDescriptions();
+        }, 100);
+    }
+
+    // ======================= СЛУЧАЙНЫЙ ВЫБОР =======================
+    function randomizeAllPresets() {
+        if (userEdited) {
+            const confirmRandom = confirm("Случайный выбор пресетов приведёт к потере правок. Продолжить?");
+            if (!confirmRandom) return;
+            userEdited = false;
+            finalPromptElem.classList.remove('edited');
+            updateManualBadge();
+        }
+        for (let catIdx = 0; catIdx < categoriesData.length; catIdx++) {
+            const cat = categoriesData[catIdx];
+            if (cat.presets.length > 0) {
+                selected[catIdx] = Math.floor(Math.random() * cat.presets.length);
+            } else {
+                selected[catIdx] = null;
+            }
+        }
+        buildCategories();
+        updateFinalPromptFromData();
+        updateAllCategoryResetButtons();
+        updateGlobalResetButton();
+    }
+
+    // ======================= СОХРАНЕНИЕ =======================
+    function savePromptToFile() {
+        const text = finalPromptElem.value;
+        if (!text || text.length < 20) {
+            alert(currentLang === 'ru' ? "Нечего сохранять – промпт пуст или слишком короткий." : "Nothing to save – prompt is empty or too short.");
+            return;
+        }
+        let characterName = characterInput.value.trim();
+        if (characterName === "") characterName = "CHARACTER";
+        else characterName = characterName.replace(/[^a-zA-Zа-яА-Я0-9_-]/g, '_');
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        const filename = `IDESI_${characterName}_${dateStr}.txt`;
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        const orig = saveBtn.textContent;
+        saveBtn.textContent = currentLang === 'ru' ? 'Сохранено!' : 'Saved!';
+        setTimeout(() => saveBtn.textContent = orig, 1500);
+    }
+
+    // ======================= ПЕРЕТАСКИВАНИЕ ИКОНКИ =======================
+    function initDragIcon() {
+        const dragIcon = document.getElementById('drag-icon');
+        if (!dragIcon) return;
+        let dragActive = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+
+        function startDrag(e) {
+            e.preventDefault();
+            dragActive = true;
+            const rect = dragIcon.getBoundingClientRect();
+            let left = rect.left;
+            let top = rect.top;
+            dragIcon.style.right = 'auto';
+            dragIcon.style.bottom = 'auto';
+            dragIcon.style.left = left + 'px';
+            dragIcon.style.top = top + 'px';
+            const clientX = e.clientX ?? (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY ?? (e.touches ? e.touches[0].clientY : 0);
+            startX = clientX;
+            startY = clientY;
+            initialLeft = left;
+            initialTop = top;
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!dragActive) return;
+            e.preventDefault();
+            let clientX = e.clientX ?? (e.touches ? e.touches[0].clientX : 0);
+            let clientY = e.clientY ?? (e.touches ? e.touches[0].clientY : 0);
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            dragIcon.style.left = (initialLeft + dx) + 'px';
+            dragIcon.style.top = (initialTop + dy) + 'px';
+        }
+
+        function stopDrag() {
+            dragActive = false;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        dragIcon.addEventListener('mousedown', startDrag);
+        dragIcon.addEventListener('touchstart', startDrag, { passive: false });
+        dragIcon.addEventListener('dblclick', () => {
+            dragIcon.style.left = 'auto';
+            dragIcon.style.right = '20px';
+            dragIcon.style.bottom = '20px';
+            dragIcon.style.top = 'auto';
+        });
+    }
+
+    // ======================= КОПИРОВАНИЕ =======================
+    function copyToClipboard() {
+        const text = finalPromptElem.value;
+        if (!text || text.length < 10) {
+            copyBtn.textContent = currentLang === 'ru' ? 'Нечего копировать' : 'Nothing to copy';
+            setTimeout(() => copyBtn.textContent = (currentLang === 'ru' ? 'КОПИРОВАТЬ' : 'COPY'), 1000);
+            return;
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = copyBtn.textContent;
+                copyBtn.textContent = currentLang === 'ru' ? 'Скопировано!' : 'Copied!';
+                setTimeout(() => copyBtn.textContent = original, 1500);
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, text.length);
+        let success = false;
+        try {
+            success = document.execCommand('copy');
+        } catch (err) {}
+        document.body.removeChild(textarea);
+        if (success) {
+            const original = copyBtn.textContent;
+            copyBtn.textContent = currentLang === 'ru' ? 'Скопировано!' : 'Copied!';
+            setTimeout(() => copyBtn.textContent = original, 1500);
+        } else {
+            copyBtn.textContent = currentLang === 'ru' ? 'Ошибка копирования' : 'Copy error';
+            setTimeout(() => copyBtn.textContent = (currentLang === 'ru' ? 'КОПИРОВАТЬ' : 'COPY'), 1500);
+        }
+    }
+
+    // ======================= ЛОГИКА БЛОКА АССИСТЕНТ =======================
+    function initAssistant() {
+        const assistantContent = document.getElementById('assistantContent');
+        if (!assistantContent) return;
+        let activeTarget = null;
+
+        function showContent(target) {
+            if (activeTarget === target && assistantContent.style.display === 'block') {
+                assistantContent.style.display = 'none';
+                activeTarget = null;
+                document.querySelectorAll('.assistant-btn').forEach(btn => btn.classList.remove('active'));
+                return;
+            }
+
+            assistantContent.style.display = 'block';
+            assistantContent.innerHTML = '';
+
+            if (target === 'generator') {
+                const isRu = currentLang === 'ru';
+                const containerDiv = document.createElement('div');
+                containerDiv.className = 'generator-container';
+                containerDiv.innerHTML = `
+                    <textarea id="presetDescription" rows="4" placeholder="${isRu ? 'это может быть любой готовый промпт или запрос своими словами, который необходимо адаптировать' : 'This could be any ready-made prompt or a request in your own words that needs to be adapted.'}"></textarea>
+                    <button id="generatePresetBtn" style="margin-top:8px;">${isRu ? 'СТАРТ' : 'START'}</button>
+                    <div id="generatorResult" class="generator-result" style="display: none; margin-top: 1rem;"></div>
+                    <hr style="margin: 1.5rem 0 1rem 0; border-color: #2a2a3a;">
+                    <div id="adaptedSection" style="display: none;">
+                        <label for="adaptedText" style="display: block; margin-bottom: 8px; font-size: 0.8rem;">
+                            ${isRu ? 'Результат декомпозиции (вставьте ответ нейросети):' : 'Decomposition result (paste the AI response):'}
+                        </label>
+                        <textarea id="adaptedText" rows="5" placeholder="${isRu ? 'ответ языковой модели' : 'language model response'}"></textarea>
+                        <button id="addToFinalBtn" style="margin-top:8px;">${isRu ? 'ДОБАВИТЬ В ФИНАЛЬНЫЙ ПРОМПТ' : 'ADD TO FINAL PROMPT'}</button>
+                    </div>
+                `;
+                assistantContent.appendChild(containerDiv);
+
+                const generateBtn = containerDiv.querySelector('#generatePresetBtn');
+                const resultDiv = containerDiv.querySelector('#generatorResult');
+                const textarea = containerDiv.querySelector('#presetDescription');
+                const adaptedSection = containerDiv.querySelector('#adaptedSection');
+                const adaptedTextarea = containerDiv.querySelector('#adaptedText');
+                const addToFinalBtn = containerDiv.querySelector('#addToFinalBtn');
+
+                // СИСТЕМНЫЕ ПРОМПТЫ УДАЛЕНЫ – ВСТАВЬТЕ СВОИ НИЖЕ
+                const systemPromptRu = `Ты — интеллектуальный анализатор и генератор промптов для профессионального конструктора IDESI.
+
+На вход ты получаешь текстовое описание (промпт) — оно может быть коротким или очень подробным, структурированным или хаотичным. Это может быть уже готовый промпт для генерации изображения, написанный пользователем в свободной форме, или просто набор пожеланий.
+
+Твоя задача — проанализировать этот текст и разложить его на 9 категорий, предусмотренных конструктором IDESI. Для каждой категории, по которой в тексте есть информация (явная или неявная), ты должен сгенерировать одну строку в строгом формате:
+- [X] НАЗВАНИЕ: сгенерированное описание
+
+Категории должны содержать:
+- [1] СТИЛЬ: Глобальный художественный и шейдерный движок сцены, имитация материалов и рендеринга (гуашь, воксели, винил, Cel-Shading, Unlit, PS1 low-poly, Stop-Motion).
+- [2] БАЗОВАЯ ПЛОСКОСТЬ (опора под ногами): Физический пол, текстура и материал, поглощение/отражение света снизу.
+- [3] БЛИЖНИЙ ПЛАН (окружение вокруг персонажа): Интерьер, текстуры и материалы.
+- [4] ДАЛЬНИЙ ПЛАН: Архитектурный дальний план, текстуры и материалы.
+- [5] РАКУРС: Кадрирование, тип линз, углы и геометрические искажения.
+- [6] СВЕТ И ЦВЕТ: Световые схемы, источники, углы падения в градусах, тени и колористика.
+- [7] ОДЕЖДА И ЭКИПИРОВКА: Аутфит.
+- [8] ПОЗА И ДИНАМИКА: Биомеханика тела, распределение веса, жесты, движения.
+- [9] ПРИЧЕСКА И ВОЛОСЫ: Стрижка, укладка, физика, геометрия и динамика волос/головы.
+
+ПРАВИЛА ИНФЕРЕНЦИИ И ЗАПОЛНЕНИЯ ПРОПУСКОВ:
+Пользователь может указать лишь часть параметров или чистый образ. Алгоритм ОБЯЗАН самостоятельно рассчитать и достроить техническую спецификацию, логически вытекающую из контекста. Все скрытые параметры должны присутствовать в финальном описании:
+- В категории РАКУРС: Обязательно укажи тип кадрирования, положение камеры по высоте, эффект линзы/фокусное расстояние, композиционную геометрию и плоскость фокуса.
+- В категории СВЕТ И ЦВЕТ: Обязательно жестко пропиши схему освещения, конкретный источник света, угол падения в градусах или направление падения, характер и геометрию теней, а также цветовую гамму, градинг или оптические аберрации.
+- В категории ОДЕЖДА / БЛИЖНИЙ ПЛАН / БАЗОВАЯ ПЛОСКОСТЬ: Раскладывай образ на PBR-текстуры (Roughness, Specular, Metallic, IOR, SSS, Transmission), силуэт/крой (oversized, tight-fitting, layered), функциональный обвес (straps, pouches, rivets) и текстурный износ (battle-worn, scratched, tattered, matted, dusty).
+- В категории ПОЗА: Расписывай распределение веса/опору (on all fours, sitting on haunches), жестикуляцию рук (hands clutching head, extended hand), направление взгляда/наклон головы и физику взаимодействия с полом или одеждой.
+- В категории ПРИЧЕСКА И ВОЛОСЫ: Указывай тип стрижки, текстуру (spiked, sleek, messy, coily), спецэффекты (glowing fibers, iridescent, molten liquid) и динамику (wind-blown, streaming down, hanging forward).
+- Важное правило многозадачности: исходный текст может описывать несколько категорий одновременно. Например, фраза «киберпанк-ниндзя в неоновом городе стоит в динамичной позе» должна дать категории [1] СТИЛЬ (киберпанк), [7] ОДЕЖДА (ниндзя), [4] ДАЛЬНИЙ ПЛАН (неоновый город), [8] ПОЗА (динамичная). Не ограничивайся одной категорией.
+- Если в тексте явно описана одна категория, но остальные не упомянуты — выведи только её. Не нужно придумывать остальные.
+- Если текст описывает конкретный визуальный образ без разбивки на категории — всё равно постарайся выделить из него все возможные категории, но не натягивай.
+- Особый случай: если входной текст уже соответствует формату: - [X] НАЗВАНИЕ: описание, выведи его без изменений.
+- Если ни одна из 9 категорий не может быть достоверно определена (запрос не по теме или абстрактный), выведи одну строку: недостаточно данных.
+
+ЖЕСТКИЕ ТЕХНИЧЕСКИЕ ОГРАНИЧЕНИЯ:
+1. Запрещено выводить любой вводный текст, приветствия, объяснения или лишние символы (включая кавычки, скобки, многоточия), не предусмотренные форматом.
+2. Вывод должен состоять из одной или нескольких строк Markdown-списка. Каждая строка имеет формат: - [X] название: описание. Строки разделяются переводами строк. Не добавляй пустых строк между строками пресетов.
+3. Не повторяй исходный запрос пользователя дословно. Полностью адаптируй его, используя профессиональный сленг 3D-артистов, фотографов и кинооператоров.
+Данные пользователя:`;   // сюда вставьте русский системный промпт
+                const systemPromptEn =  `You are an intelligent analyzer and prompt generator for the professional IDESI designer.
+
+You receive a text description (prompt)—it can be short or very detailed, structured or chaotic. This could be a ready-made prompt for image generation, written by the user in free form, or simply a set of wishes.
+
+Your task is to analyze this text and sort it into the nine categories provided by the IDESI designer. For each category for which the text contains information (explicit or implicit), you must generate one line in a strict format:
+- [X] TITLE: generated description
+
+Categories must contain:
+- [1] STYLE: Global art and shader scene engine, material and rendering simulation (gouache, voxels, vinyl, cel-shading, unlit, PS1 low-poly, stop-motion).
+- [2] GROUND PLANE (underfoot): Physical floor, texture and material, absorption/reflection of light from below.
+- [3] CLOSE SHOT (character environment): Interior, textures and materials.
+- [4] LONG SHOT: Architectural long shot, textures and materials.
+- [5] ANGLE: Framing, lens type, angles, and geometric distortions.
+- [6] LIGHT AND COLOR: Lighting schemes, sources, angles of incidence in degrees, shadows, and color.
+- [7] CLOTHING AND EQUIPMENT: Outfit.
+- [8] POSE AND DYNAMICS: Body biomechanics, weight distribution, gestures, and movement.
+- [9] HAIR AND HAIRSTYLE: Haircut, styling, physics, geometry, and dynamics of the hair/head.
+
+INFLUENCE AND FILL-IN-BLANK RULES:
+The user may specify only some of the parameters or a pure image. The algorithm MUST independently calculate and complete the technical specifications, logically following from the context. All hidden parameters must be present in the final description:
+- In the ANGLE category: Be sure to specify the framing type, camera height, lens effect/focal length, compositional geometry, and plane of focus.
+- In the LIGHT AND COLOR category: Be sure to clearly specify the lighting scheme, the specific light source, the angle of incidence in degrees or direction of incidence, the nature and geometry of shadows, as well as the color gamut, grading, and optical aberrations.
+- In the CLOTHING / CLOSE-UP / BASE PLANE category: Break down the look into PBR textures (Roughness, Specular, Metallic, IOR, SSS, Transmission), silhouette/cut (oversized, tight-fitting, layered), functional attachments (straps, pouches, rivets), and textural wear (battle-worn, scratched, tattered, matted, dusty).
+- In the POSE category: Describe weight distribution/support (on all fours, sitting on haunches), hand gestures (hands clutching head, extended hand), gaze direction/head tilt, and the physics of interaction with the floor or clothing.
+- In the HAIRSTYLE AND HAIR category: Indicate the haircut type, texture (spiked, sleek, messy, coiled), special effects (glowing fibers, iridescent, molten liquid), and dynamics (wind-blown, streaming down, hanging forward).
+- An important rule of multitasking: the source text can describe several categories simultaneously. For example, the phrase "cyberpunk ninja in a neon city strikes a dynamic pose" should yield the categories [1] STYLE (cyberpunk), [7] CLOTHING (ninja), [4] LONG SHOT (neon city), [8] POSE (dynamic). Don't limit yourself to a single category.
+- If the text clearly describes one category but doesn't mention the others, display only that one. There's no need to invent others.
+- If the text describes a specific visual image without breaking it down into categories, try to extract all possible categories from it anyway, but don't overdo it.
+- Special case: If the input text already matches the format: - [X] TITLE: description, output it unchanged.
+- If none of the 9 categories can be reliably determined (the query is off-topic or abstract), output one line: insufficient data.
+
+STRICT TECHNICAL RESTRICTIONS:
+1. It is prohibited to output any introductory text, greetings, explanations, or extra characters (including quotation marks, brackets, and ellipses) not specified by the format.
+2. The output must consist of one or more lines of Markdown list. Each line has the format: - [X] title: description. Lines are separated by newlines. Do not add blank lines between preset lines.
+3. Do not repeat the user's original query verbatim. Fully customize it using the professional jargon of 3D artists, photographers, and cinematographers.
+User details:`;   // сюда вставьте английский системный промпт
+
+                generateBtn.addEventListener('click', () => {
+                    const userQuery = textarea.value.trim();
+                    if (!userQuery) {
+                        alert(isRu ? 'Пожалуйста, напишите ваш запрос.' : 'Please enter your request.');
+                        return;
+                    }
+                    resultDiv.style.display = 'block';
+                    const currentSystemPrompt = (currentLang === 'ru') ? systemPromptRu : systemPromptEn;
+                    if (!currentSystemPrompt) {
+                        resultDiv.innerHTML = `<div style="color: #e94560;">Системный промпт не задан. Вставьте его в код.</div>`;
+                        return;
+                    }
+                    const fullPrompt = currentSystemPrompt + '\n\n' + userQuery;
+
+                    resultDiv.innerHTML = `
+                        <strong>${currentLang === 'ru' ? 'Скопируйте этот промпт и отправьте в любую языковую модель (DeepSeek, ChatGPT, Claude):' : 'Copy this prompt and send it to any language model (DeepSeek, ChatGPT, Claude):'}</strong><br>
+                        <textarea rows="10" style="width:100%; background:#1c1c28; color:#cdd6f4; border-radius:8px; padding:8px; margin-top:8px; font-family: monospace; font-size:0.8rem;" readonly>${fullPrompt}</textarea>
+                        <button id="copyGeneratedBtn" style="margin-top:8px;">${currentLang === 'ru' ? 'КОПИРОВАТЬ' : 'COPY'}</button>
+                    `;
+                    const copyGenBtn = resultDiv.querySelector('#copyGeneratedBtn');
+                    if (copyGenBtn) {
+                        copyGenBtn.addEventListener('click', () => {
+                            navigator.clipboard.writeText(fullPrompt);
+                            alert(currentLang === 'ru' ? 'Промпт скопирован!' : 'Prompt copied!');
+                            adaptedSection.style.display = 'block';
+                            adaptedSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        });
+                    }
+                });
+
+                addToFinalBtn.addEventListener('click', () => {
+                    let adaptedText = adaptedTextarea.value.trim();
+                    if (!adaptedText) {
+                        alert(isRu ? 'Поле с ответом языковой модели пусто. Вставьте текст.' : 'The language model response field is empty. Paste the text.');
+                        return;
+                    }
+                    const finalElem = document.getElementById('finalPrompt');
+                    let currentPrompt = finalElem.value;
+
+                    const startMarker = '<!--ADAPTED_START-->';
+                    const endMarker = '<!--ADAPTED_END-->';
+                    const adaptedBlock = startMarker + '\n' + adaptedText + '\n' + endMarker;
+
+                    const startIdx = currentPrompt.indexOf(startMarker);
+                    const endIdx = currentPrompt.indexOf(endMarker);
+
+                    if (startIdx !== -1 && endIdx !== -1) {
+                        const before = currentPrompt.substring(0, startIdx);
+                        const after = currentPrompt.substring(endIdx + endMarker.length);
+                        currentPrompt = before + adaptedBlock + after;
+                    } else {
+                        const isRuLang = currentLang === 'ru';
+                        const targetLine = isRuLang ? '[ВХОДЯЩИЕ ДАННЫЕ ДЛЯ ГЕНЕРАЦИИ]:' : '[INPUT DATA FOR GENERATION]:';
+                        const targetIndex = currentPrompt.indexOf(targetLine);
+                        if (targetIndex !== -1) {
+                            const lineEndIndex = currentPrompt.indexOf('\n', targetIndex);
+                            const insertPosition = (lineEndIndex !== -1) ? lineEndIndex + 1 : targetIndex + targetLine.length + 1;
+                            currentPrompt = currentPrompt.slice(0, insertPosition) + adaptedBlock + '\n' + currentPrompt.slice(insertPosition);
+                        } else {
+                            currentPrompt += '\n' + adaptedBlock;
+                        }
+                    }
+
+                    finalElem.value = currentPrompt;
+                    if (!userEdited) {
+                        userEdited = true;
+                        finalElem.classList.add('edited');
+                        updateManualBadge();
+                    }
+                    alert(isRu ? 'Адаптированный текст добавлен в финальный промпт.' : 'Adapted text added to final prompt.');
+                });
+
+                activeTarget = target;
+            }
+
+            document.querySelectorAll('.assistant-btn').forEach(btn => {
+                if (btn.getAttribute('data-target') === target) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        document.querySelectorAll('.assistant-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                showContent(target);
+            });
+        });
+    }
+    // ======================= РАДИО (HLS) =======================
+    const hlsRadioBtn = document.getElementById('hlsRadioBtn');
+    if (hlsRadioBtn) {
+        let hls = null;
+        let isHlsPlaying = false;
+        const audio = new Audio();
+
+        hlsRadioBtn.addEventListener('click', () => {
+            if (!hls) {
+                if (Hls.isSupported()) {
+                    hls = new Hls();
+                    hls.loadSource('https://hls.rpfm.ru/rpfm/aac_hifi.m3u8');
+                    hls.attachMedia(audio);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        audio.play();
+                        isHlsPlaying = true;
+                        hlsRadioBtn.textContent = '⏸';
+                        hlsRadioBtn.style.background = '#2c5a3a';
+                        hlsRadioBtn.style.borderColor = '#6aab7a';
+                        hlsRadioBtn.style.color = '#d0f0d0';
+                    });
+                } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+                    audio.src = 'https://hls.rpfm.ru/rpfm/aac_hifi.m3u8';
+                    audio.play();
+                    isHlsPlaying = true;
+                    hlsRadioBtn.textContent = '⏸';
+                    hlsRadioBtn.style.background = '#2c5a3a';
+                    hlsRadioBtn.style.borderColor = '#6aab7a';
+                    hlsRadioBtn.style.color = '#d0f0d0';
+                }
+            } else if (isHlsPlaying) {
+                audio.pause();
+                isHlsPlaying = false;
+                hlsRadioBtn.textContent = '▶';
+                hlsRadioBtn.style.background = '#252538';
+                hlsRadioBtn.style.borderColor = '#8a8aa6';
+                hlsRadioBtn.style.color = '#cdd6f4';
+            } else {
+                audio.play();
+                isHlsPlaying = true;
+                hlsRadioBtn.textContent = '⏸';
+                hlsRadioBtn.style.background = '#2c5a3a';
+                hlsRadioBtn.style.borderColor = '#6aab7a';
+                hlsRadioBtn.style.color = '#d0f0d0';
+            }
+        });
+    }
+    // ======================= ИНИЦИАЛИЗАЦИЯ =======================
+    function init() {
+        window.addEventListener('load', () => {
+            buildCategories();
+            updateUILanguage();
+            updateFinalPromptFromData();
+            updateAllCategoryResetButtons();
+            updateGlobalResetButton();
+            updateLabelsFill();
+            initAssistant();
+
+            characterInput.addEventListener('input', () => { if (!userEdited) updateFinalPromptFromData(); updateLabelsFill(); });
+            genderInput.addEventListener('input', () => { if (!userEdited) updateFinalPromptFromData(); updateLabelsFill(); });
+            raceInput.addEventListener('input', () => { if (!userEdited) updateFinalPromptFromData(); updateLabelsFill(); });
+            sceneInput.addEventListener('input', () => { if (!userEdited) updateFinalPromptFromData(); updateLabelsFill(); });
+            
+            finalPromptElem.addEventListener('input', () => {
+                if (!userEdited) {
+                    userEdited = true;
+                    finalPromptElem.classList.add('edited');
+                    updateManualBadge();
+                }
+            });
+
+            if (copyBtn) copyBtn.addEventListener('click', copyToClipboard);
+            if (resetAllBtn) resetAllBtn.addEventListener('click', resetAll);
+            if (translateBtn) translateBtn.addEventListener('click', switchLanguage);
+            if (saveBtn) saveBtn.addEventListener('click', savePromptToFile);
+            if (randomBtn) randomBtn.addEventListener('click', randomizeAllPresets);
+
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('reset-cat')) {
+                    const catIdx = parseInt(e.target.getAttribute('data-cat'));
+                    resetCategory(catIdx);
+                }
+            });
+
+            initDragIcon();
+
+            window.addEventListener('resize', () => {
+                const allDesc = document.querySelectorAll('.preset-desc');
+                allDesc.forEach(descEl => {
+                    const original = descEl.getAttribute('data-full-text');
+                    if (original) descEl.innerHTML = original;
+                });
+                setTimeout(() => applyMarqueeToDescriptions(), 30);
+            });
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
